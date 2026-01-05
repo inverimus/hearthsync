@@ -59,25 +59,14 @@ let configPath = getCurrentDir() / "lycan.cfg"
 
 proc writeConfig*(config: Config) =
   var json = newJObject()
-  json["githubToken"] = %config.githubToken
-  json["logLevel"] = %config.logLevel
-  
-  var existingConfig: JsonNode = newJObject()
-  try:
-    existingConfig = readFile(configPath).parseJson()
-  except:
-    discard
   
   json["addonJsonFile"] = %config.addonJsonFile
   json["installDir"] = %config.installDir
   json["backupEnabled"] = %config.backupEnabled
   json["backupDir"] = %config.backupDir
+  json["githubToken"] = %config.githubToken
+  json["logLevel"] = %config.logLevel
   
-  json = existingConfig
-
-  json["backupEnabled"] = %true
-  json["installDir"] = %joinPath(getCurrentDir(), "Interface", "AddOns")
-
   try:
     writeFile(configPath, pretty(json))
     log(&"Configuration file saved: {configPath}", Info)
@@ -99,6 +88,7 @@ proc loadConfig*(): Config =
     result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
     result.backupEnabled = true
     result.githubToken = ""
+    writeConfig(result)
     return
 
   result.installDir = configJson["installDir"].getStr()
