@@ -1,6 +1,7 @@
 nimcache/
 nimblecache/
 htmldocs/
+lycan
 src/lycan
 src/lycan.exe
 src/test*
