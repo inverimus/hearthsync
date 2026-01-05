@@ -167,7 +167,10 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
       if name.contains(addon.gameVersion):
         addon.downloadUrl = asset["browser_download_url"].getStr()
         return
-    addon.downloadUrl = json["zipball_url"].getStr()
+    if not addon.gameVersion.isEmptyOrWhitespace:
+      addon.setAddonState(Failed, &"No matching zip file matching: {addon.gameVersion}. Try reinstalling.", &"{addon.getName()}: no matching zip file for current game version.")
+    else:
+      addon.downloadUrl = json["zipball_url"].getStr()
   of GithubRepo:
     addon.downloadUrl = &"https://www.github.com/{addon.project}/archive/refs/heads/{addon.branch.get}.zip"
   of Gitlab:
@@ -178,6 +181,33 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.downloadUrl = json["url"].getStr()
   of Wowint:
     addon.downloadUrl = json[0]["UIDownload"].getStr()
+
+proc userSelect(addon: Addon, options: seq[(int, string)]): int {.gcsafe.} =
+  return 0
+
+proc chooseDownload(addon: Addon, json: JsonNode) =
+  if addon.state == Failed: return
+  case addon.kind
+  of Github:
+    let assets = json["assets"]
+    var options: seq[(int, string)]
+    for asset in enumerate(assets):
+      if asset["content_type"].getStr() != "application/zip":
+        continue
+      let name = asset["name"].getStr().toLower()
+      choices.add((i, name))
+    case options.len
+    of 0:
+      addon.downloadUrl = json["zipball_url"].getStr()
+      return
+    of 1:
+      addon.downloadUrl = assets[options[0][0]]["browser_download_url"].getStr()
+      return
+    else:
+      let i = addon.userSelect(options)
+      addon.downloadUrl = assets[options[i][0]]["browser_download_url"].getStr()
+  of GithubRepo, Curse, Gitlab, Tukui, Wowint:
+    addon.setDownloadUrl(json)
 
 proc download(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
@@ -397,8 +427,36 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
       for version in gameVersions:
         if version == addon.gameVersion:
           return json["data"][i]
+    addon.setAddonState(Failed, &"JSON Error: No game version matches current verion of {addon.gameVersion}.", 
+      &"JSON Error: {addon.getName()}: no game version matches current mode of {addon.gameVersion}.")
+  of Tukui:
+    for node in json:
+      if node["slug"].getStr() == addon.project:
+        return node
+    addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
+    return
+  else:
+    discard
+  return json
+
+proc chooseJson(addon: Addon): JsonNode =
+  var json: JsonNode
+  let response = addon.getLatest()
+  if addon.state == Failed: return
+  try:
+    json = parseJson(response.body)
+  except Exception as e:
+    addon.setAddonState(Failed, "JSON parsing error.", &"{addon.getName()}: JSON parsing error", e)
+  case addon.kind:
+  of Curse:
+    var gameVersions: seq[string]
+    for i, node in enumerate(json["data"]):
+      gameVersions.fromJson(node["gameVersions"])
+      for version in gameVersions:
+        if version == addon.gameVersion:
+          return json["data"][i]
     addon.setAddonState(Failed, &"JSON Error: No game version matches current verion of {addon.gameVersion}.",
-    &"JSON Error: {addon.getName()}: no game version matches current mode of {addon.gameVersion}.")
+      &"JSON Error: {addon.getName()}: no game version matches current mode of {addon.gameVersion}.")
   of Tukui:
     for node in json:
       if node["slug"].getStr() == addon.project:
@@ -431,15 +489,13 @@ proc update(addon: Addon) {.gcsafe.} =
     addon.setAddonState(FinishedUpToDate)
 
 proc install(addon: Addon) {.gcsafe.} =
-  # need to list versions for curse here and let user choose
-  let json = addon.extractJson()
+  # need to list versions for curse and let user choose
+  let json = addon.chooseJson()
   addon.setAddonState(Parsing)
+  addon.chooseDownload(json)
   addon.setVersion(json)
 
   addon.time = now()
-  
-  # need to list versions for github here and let user choose
-  addon.setDownloadUrl(json)
   addon.setName(json)
   addon.setAddonState(Downloading)
   addon.download(json)
