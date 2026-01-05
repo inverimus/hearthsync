@@ -271,7 +271,7 @@ proc main() {.inline.} =
   of Update, Empty, Reinstall:
     for addon in configData.addons:
       addon.line = line
-      addon.action = if action == Reinstall: Reinstall else: Install
+      addon.action = if action == Reinstall: Reinstall else: Update
       addons.add(addon)
       line += 1
     if addons.len == 0:

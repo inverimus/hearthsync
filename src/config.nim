@@ -33,6 +33,7 @@ proc fromJsonHook(a: var Addon, j: JsonNode) =
   a.kind = k
   a.branch = b
   a.version = j["version"].getStr()
+  a.gameVersion = j["gameVersion"].getStr()
   a.name = j["name"].getStr()
   a.overrideName = n
   a.dirs = d
@@ -44,11 +45,11 @@ proc parseInstalledAddons(filename: string): seq[Addon] =
   if not fileExists(filename): return @[]
   var addonsJson: JsonNode
   try:
-    addonsJson = parseJson(readFile(filename))
+    addonsJson = readFile(filename).parseJson()
   except Exception as e:
     echo &"Fatal error parsing installed addons file: {filename}"
     log(&"Fatal error parsing installed addons file: {filename}", Fatal, e)
-    quit()
+    quit(1)
   for addon in addonsJson:
     var a = new(Addon)
     a.fromJson(addon)
@@ -85,19 +86,20 @@ proc loadConfig*(): Config =
     result.logLevel = Debug
     result.addonJsonFile = getCurrentDir() / "WTF" / "lycan_addons.json"
     result.installDir = getCurrentDir() / "Interface" / "AddOns"
-    result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
     result.backupEnabled = true
+    result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
     result.githubToken = ""
+    result.addons = @[]
     writeConfig(result)
+    log(&"{configPath} not found, defaults loaded", Info)
     return
 
-  result.installDir = configJson["installDir"].getStr()
+  result.logLevel = parseEnum[LogLevel](configJson["logLevel"].getStr())
   result.addonJsonFile = configJson["addonJsonFile"].getStr()
+  result.installDir = configJson["installDir"].getStr()
   result.backupEnabled = configJson["backupEnabled"].getBool()
   result.backupDir = configJson["backupDir"].getStr()
   result.githubToken = configJson["githubToken"].getStr()
-  result.logLevel = parseEnum[LogLevel](configJson["logLevel"].getStr())
-  
   result.addons = parseInstalledAddons(result.addonJsonFile)   
   log("Configuration loaded", Info)
 
@@ -119,7 +121,7 @@ proc setBackup*(arg: string) =
         moveFile(path, arg / lastPathPart(path))
     configData.backupDir = arg
     log(&"New backup directory set: {dir}", Info)
-    echo "Backup directory now ", dir
+    echo &"Backup directory now: {dir}"
     echo "Existing backup files have been moved."
 
 proc setGithubToken*(token: string) =

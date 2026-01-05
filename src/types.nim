@@ -71,6 +71,7 @@ type
     kind*: AddonKind
     version*: string
     startVersion*: string
+    gameVersion*: string
     id*: int16
     dirs*: seq[string]
     downloadUrl*: string

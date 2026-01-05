@@ -136,13 +136,6 @@ proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
   of Wowint:
     addon.version = json[0]["UIVersion"].getStr()
 
-proc invalidKeywords(addon: Addon): Regex {.gcsafe.} =
-  case addon.config.mode
-  of Retail: result = re"wrath|tbc|classic|vanilla"
-  of Vanilla: result = re"retail|mainline|wrath|tbc"
-  of Classic: result = re"retail|mainline|vanilla"
-  of None: discard
-
 proc getLatestUrl(addon: Addon): string {.gcsafe.} =
   case addon.kind
   of Curse:
@@ -171,7 +164,7 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
       if asset["content_type"].getStr() != "application/zip":
         continue
       let name = asset["name"].getStr().toLower()
-      if not name.contains(addon.invalidKeywords()):
+      if name.contains(addon.gameVersion):
         addon.downloadUrl = asset["browser_download_url"].getStr()
         return
     addon.downloadUrl = json["zipball_url"].getStr()
@@ -388,7 +381,7 @@ proc getLatest(addon: Addon): Response {.gcsafe.} =
     retryCount += 1
     sleep(100)
 
-proc getLatestJson(addon: Addon): JsonNode {.gcsafe.} =
+proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   var json: JsonNode
   let response = addon.getLatest()
   if addon.state == Failed: return
@@ -399,30 +392,25 @@ proc getLatestJson(addon: Addon): JsonNode {.gcsafe.} =
   case addon.kind:
   of Curse:
     var gameVersions: seq[string]
-    var gameVersionNumber = case addon.config.mode
-      of Retail: "10."
-      of Vanilla: "1."
-      of Classic: "3."
-      of None: ""
-    for i, data in enumerate(json["data"]):
-      gameVersions.fromJson(data["gameVersions"])
-      for num in gameVersions:
-        if num.startsWith(gameVersionNumber):
+    for i, node in enumerate(json["data"]):
+      gameVersions.fromJson(node["gameVersions"])
+      for version in gameVersions:
+        if version == addon.gameVersion:
           return json["data"][i]
-    addon.setAddonState(Failed, &"JSON Error: No game version matches current mode of {addon.config.mode}.",
-    &"JSON Error: {addon.getName()}: no game version matches current mode of {addon.config.mode}.")
+    addon.setAddonState(Failed, &"JSON Error: No game version matches current verion of {addon.gameVersion}.",
+    &"JSON Error: {addon.getName()}: no game version matches current mode of {addon.gameVersion}.")
   of Tukui:
-    for data in json:
-      if data["slug"].getStr() == addon.project:
-        return data
+    for node in json:
+      if node["slug"].getStr() == addon.project:
+        return node
     addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
     return
   else:
     discard
   return json
 
-proc install*(addon: Addon) {.gcsafe.} =
-  let json = addon.getLatestJson()
+proc update(addon: Addon) {.gcsafe.} =
+  let json = addon.extractJson()
   addon.setAddonState(Parsing)
   addon.setVersion(json)
   if addon.pinned:
@@ -438,22 +426,36 @@ proc install*(addon: Addon) {.gcsafe.} =
     addon.unzip()
     addon.createBackup()
     addon.moveDirs()
-    if addon.action == Reinstall or addon.startVersion.isEmptyOrWhitespace:
-      addon.setAddonState(FinishedInstalled)
-    else:
-      addon.setAddonState(FinishedUpdated)
+    addon.setAddonState(FinishedUpdated)
   else:
     addon.setAddonState(FinishedUpToDate)
 
-proc uninstall*(addon: Addon) =
+proc install(addon: Addon) {.gcsafe.} =
+  let json = addon.extractJson()
+  addon.setAddonState(Parsing)
+  addon.setVersion(json)
+
+  addon.time = now()
+  
+  addon.setDownloadUrl(json)
+  addon.setName(json)
+  addon.setAddonState(Downloading)
+  addon.download(json)
+  addon.setAddonState(Installing)
+  addon.unzip()
+  addon.createBackup()
+  addon.moveDirs()
+  addon.setAddonState(FinishedInstalled)
+
+proc uninstall(addon: Addon) =
   addon.removeAddonFiles(addon.config.installDir, removeAllBackups = true)
   addon.setAddonState(Removed)
 
-proc pin*(addon: Addon) =
+proc pin(addon: Addon) =
   addon.pinned = true
   addon.setAddonState(Pinned)
 
-proc unpin*(addon: Addon) =
+proc unpin(addon: Addon) =
   addon.pinned = false
   addon.setAddonState(Unpinned)
 
@@ -496,7 +498,9 @@ proc setOverrideName(addon: Addon) =
 
 proc workQueue*(addon: Addon) {.thread.} =
   case addon.action
-  of Install, Reinstall: 
+  of Update, Reinstall:
+    addon.update()
+  of Install: 
     addon.install()
   of Remove: 
     addon.uninstall()
@@ -509,8 +513,5 @@ proc workQueue*(addon: Addon) {.thread.} =
   of Name:
     addon.setOverrideName()
   else: discard
-  if addon.state == Failed:
-    addon.state = DoneFailed
-  else:
-    addon.state = Done
+  addon.state = if addon.state == Failed: DoneFailed else: Done
   addonChannel.send(addon)
