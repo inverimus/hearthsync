@@ -46,6 +46,7 @@ proc toJsonHook*(a: Addon): JsonNode =
   if a.overrideName.isSome: result["overrideName"] = %a.overrideName.get
   result["kind"] = %a.kind
   result["version"] = %a.version
+  result["gameVersion"] = %a.gameVersion
   result["id"] = %a.id
   result["pinned"] = %a.pinned
   result["dirs"] = %a.dirs
@@ -187,18 +188,15 @@ proc userSelect(addon: Addon, options: seq[(int, string)]): int {.gcsafe.} =
   let t = addon.config.term
   t.writeLine("")
   for (i, option) in options:
-    t.writeLine(&"{i}: {option}")
+    t.writeLine(16, addon.line + i + 1, false, &"{i + 1}: {option}")
+    # get arrow key or number pad input to move up and down this list
+    # change highlight depending on which one is selected
+    # press enter or a number to select
   
-  let valid = collect(for (i, _) in options: i)
-  var input: string
+  let valid = collect(for (i, _) in options: i + 1)
+  
   while true:
-    discard readLineFromStdin(input)
-    try:
-      result = parseInt(input)
-      if result in valid:
-        return
-    except:
-      continue
+    continue
       
   echo "exiting"
 

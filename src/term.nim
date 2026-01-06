@@ -39,7 +39,6 @@ proc moveTo(t: Term, x, y: int, erase: bool) =
   if t.y > h: t.y = h
   if t.y > t.yMax: t.yMax = t.y
   
-
 proc updatePos(t: Term, s: string) =
   for c in s:
     case c
@@ -51,7 +50,6 @@ proc updatePos(t: Term, s: string) =
   let h = terminalHeight()
   if t.y > h: t.y = h
   if t.y > t.yMax: t.yMax = t.y
-
 
 proc write*(t: Term, s: string) =
   t.f.write(s)
@@ -80,7 +78,7 @@ proc exitTerm(t: Term): proc() =
 
 proc termInit*(f: File = stdout): Term =
   enableTrueColors()
-  hideCursor()
+  # hideCursor()
   result = new(Term)
   result.f = f
   result.trueColor = isTrueColorSupported()
