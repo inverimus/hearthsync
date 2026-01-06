@@ -4,6 +4,7 @@ import std/httpclient
 import std/[json, jsonutils]
 import std/options
 import std/os
+import std/rdstdin
 import std/re
 import std/sequtils
 import std/[strformat, strutils]
@@ -183,7 +184,23 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.downloadUrl = json[0]["UIDownload"].getStr()
 
 proc userSelect(addon: Addon, options: seq[(int, string)]): int {.gcsafe.} =
-  return 0
+  let t = addon.config.term
+  t.writeLine("")
+  for (i, option) in options:
+    t.writeLine(&"{i}: {option}")
+  
+  let valid = collect(for (i, _) in options: i)
+  var input: string
+  while true:
+    discard readLineFromStdin(input)
+    try:
+      result = parseInt(input)
+      if result in valid:
+        return
+    except:
+      continue
+      
+  echo "exiting"
 
 proc chooseDownload(addon: Addon, json: JsonNode) =
   if addon.state == Failed: return
@@ -195,7 +212,7 @@ proc chooseDownload(addon: Addon, json: JsonNode) =
       if asset["content_type"].getStr() != "application/zip":
         continue
       let name = asset["name"].getStr().toLower()
-      choices.add((i, name))
+      options.add((i, name))
     case options.len
     of 0:
       addon.downloadUrl = json["zipball_url"].getStr()
@@ -268,7 +285,7 @@ proc tocDir(path: string): bool {.gcsafe.} =
       var (dir, name, ext) = splitFile(file)
       if ext == ".toc":
         if name != lastPathPart(dir):
-          let p = re("(.+?)(?:$|[-_](?i:mainline|classic|vanilla|classic_era|wrath|tbc|bcc))", flags = {reIgnoreCase})
+          let p = re("(.+?)(?:$|[-_](?i:mainline|classic|vanilla|classic_era|wrath|tbc|bcc|cata|wotlk))", flags = {reIgnoreCase})
           var m: array[2, string]
           discard find(cstring(name), p, m, 0, len(name))
           name = m[0]
