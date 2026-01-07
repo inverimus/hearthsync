@@ -56,29 +56,21 @@ proc write*(t: Term, s: string) =
   t.f.flushFile()
   t.updatePos(s)
 
-proc writeLine*(t: Term, s: string) =
-  t.f.write(s)
-  t.f.write("\n")
-  t.f.flushFile()
-  t.updatePos(s)
-  t.updatePos("\n")
-
 proc write*(t: Term, x, y: int, erase: bool, s: string) =
   t.moveTo(x, y, erase)
   t.write(s)
-
-proc writeLine*(t: Term, x, y: int, erase: bool, s: string) =
-  t.moveTo(x, y, erase)
-  t.writeLine(s)
 
 proc exitTerm(t: Term): proc() =
   return proc() =
     resetAttributes()
     showCursor()
 
+proc addLine*(t: Term) =
+  t.write(0, t.yMax, false, "\n")
+
 proc termInit*(f: File = stdout): Term =
   enableTrueColors()
-  # hideCursor()
+  hideCursor()
   result = new(Term)
   result.f = f
   result.trueColor = isTrueColorSupported()

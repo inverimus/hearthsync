@@ -4,11 +4,11 @@ import std/httpclient
 import std/[json, jsonutils]
 import std/options
 import std/os
-import std/rdstdin
 import std/re
 import std/sequtils
 import std/[strformat, strutils]
 import std/sugar
+import std/terminal
 import std/times
 
 import zippy/ziparchives
@@ -184,43 +184,82 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
   of Wowint:
     addon.downloadUrl = json[0]["UIDownload"].getStr()
 
-proc userSelect(addon: Addon, options: seq[(int, string)]): int {.gcsafe.} =
+proc userSelect(addon: Addon, options: seq[string]): int {.gcsafe.} =
   let t = addon.config.term
-  t.writeLine("")
-  for (i, option) in options:
-    t.writeLine(16, addon.line + i + 1, false, &"{i + 1}: {option}")
-    # get arrow key or number pad input to move up and down this list
-    # change highlight depending on which one is selected
-    # press enter or a number to select
-  
-  let valid = collect(for (i, _) in options: i + 1)
-  
+  var selected = 1
+  for _ in 0 .. options.len:
+    t.addLine()
+
   while true:
-    continue
-      
-  echo "exiting"
+    for (i, option) in enumerate(options):
+      if selected == i + 1:
+        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
+      else:
+        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
+    let key = getch()
+    case key
+    of '1' .. '9':
+      var lastSelected = selected
+      let n = parseInt($key)
+      if n < options.len + 1 and n >= 1:
+        selected = n
+      if selected == lastSelected:
+        for i in 0 .. options.len:
+          t.write(16, addon.line + i + 1, true, resetStyle)
+        return selected - 1
+    else:
+      discard
+
+proc findCommonPrefix(strings: seq[string]): string =
+  if strings.len == 0: return ""
+  result = strings[0]
+  for s in strings[1..^1]:
+    while not s.startsWith(result) and result.len > 0:
+      result = result[0..^2]
+
+proc findCommonSuffix(strings: seq[string]): string =
+  if strings.len == 0: return ""
+  result = strings[0]
+  for s in strings[1..^1]:
+    while not s.endsWith(result) and result.len > 0:
+      result = result[1..^1]
+
+proc extractVersionFromDifferences(filenames: seq[string], selectedIndex: int): string =
+  if filenames.len <= 1: return "unknown"
+  
+  let commonPrefix = findCommonPrefix(filenames)
+  let commonSuffix = findCommonSuffix(filenames)
+  
+  # Extract the part that's different for the selected file
+  var selected = filenames[selectedIndex]
+  if selected.startsWith(commonPrefix):
+    selected = selected[commonPrefix.len..^1]
+  if selected.endsWith(commonSuffix):
+    selected = selected[0..^(commonSuffix.len + 1)]
 
 proc chooseDownload(addon: Addon, json: JsonNode) =
   if addon.state == Failed: return
   case addon.kind
   of Github:
     let assets = json["assets"]
-    var options: seq[(int, string)]
-    for (i, asset) in enumerate(assets):
+    var options: seq[string]
+    for asset in assets:
       if asset["content_type"].getStr() != "application/zip":
         continue
       let name = asset["name"].getStr().toLower()
-      options.add((i, name))
+      options.add(name)
     case options.len
     of 0:
       addon.downloadUrl = json["zipball_url"].getStr()
       return
     of 1:
-      addon.downloadUrl = assets[options[0][0]]["browser_download_url"].getStr()
+      addon.downloadUrl = assets[0]["browser_download_url"].getStr()
       return
     else:
       let i = addon.userSelect(options)
-      addon.downloadUrl = assets[options[i][0]]["browser_download_url"].getStr()
+      addon.gameVersion = extractVersionFromDifferences(options, i)
+      echo addon.gameVersion
+      addon.downloadUrl = assets[i]["browser_download_url"].getStr()
   of GithubRepo, Curse, Gitlab, Tukui, Wowint:
     addon.setDownloadUrl(json)
 
@@ -545,7 +584,7 @@ proc list*(addons: seq[Addon]) =
     versionSpace = addons[addons.map(a => a.getVersion().len).maxIndex()].getVersion().len + 2
   for addon in addons:
     addon.stateMessage(nameSpace, versionSpace)
-  t.write(0, t.yMax, false, "\n")
+  t.addLine()
   quit()
 
 proc restore*(addon: Addon) =
