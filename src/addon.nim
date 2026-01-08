@@ -591,6 +591,9 @@ proc chooseJson(addon: Addon): JsonNode =
     addon.setAddonState(Failed, "JSON parsing error.", &"{addon.getName()}: JSON parsing error", e)
   case addon.kind:
   of Curse:
+    if json["data"].len == 0:
+      addon.setAddonState(Failed, "Addon not found.", "Addon not found.")
+      return
     var gameVersionsSet: OrderedSet[string]
     for data in json["data"]:
       var tmp: seq[string]
