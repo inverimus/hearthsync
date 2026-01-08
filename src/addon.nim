@@ -515,26 +515,14 @@ proc chooseJson(addon: Addon): JsonNode =
     addon.setAddonState(Failed, "JSON parsing error.", &"{addon.getName()}: JSON parsing error", e)
   case addon.kind:
   of Curse:
-    var gameVersions: HashSet[string]
+    var gameVersionsSet: HashSet[string]
     for data in json["data"]:
       var tmp: seq[string]
       tmp.fromJson(data["gameVersions"])
-      gameVersions.incl(tmp.toHashSet())
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      gameVersionsSet.incl(tmp.toHashSet())
+    var gameVersions = gameVersionsSet.toSeq()
+    gameVersions.sort()
+    let selectedVersion = gameVersions[userSelect(addon, gameVersions)]
   of Tukui:
     for node in json:
       if node["slug"].getStr() == addon.project:
