@@ -7,7 +7,7 @@ import std/terminal
 
 import types
 
-proc handleSelection*(t: Term, length, selected: int): int =
+proc handleSelection*(length, selected: int): int =
   # returns -1 if key does nothing
   let key = getch()
   case key

@@ -214,7 +214,7 @@ proc userSelectDownloadGithub(addon: Addon, options: seq[string]): int {.gcsafe.
         t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
       else:
         t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
-    let newSelected = t.handleSelection(options.len, selected)
+    let newSelected = handleSelection(options.len, selected)
     if newSelected == selected:
       t.clear(addon.line .. addon.line + options.len)
       return selected
@@ -577,7 +577,7 @@ proc userSelectGameVersionCurse(addon: Addon, options: seq[string]): string {.gc
         t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {version}", resetStyle)
       else:
         t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {version}", resetStyle)
-    let newSelected = t.handleSelection(options.len, selected)
+    let newSelected = handleSelection(options.len, selected)
     if newSelected == selected:
       t.clear(addon.line .. addon.line + options.len)
       return options[selected - 1]
