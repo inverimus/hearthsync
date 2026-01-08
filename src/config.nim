@@ -85,7 +85,6 @@ proc defaultConfig(): Config =
   result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
   result.githubToken = ""
   result.addons = @[]
-  writeConfig(result)
 
 proc loadConfig*(): Config =
   var configJson: JsonNode
@@ -93,9 +92,10 @@ proc loadConfig*(): Config =
     configJson = readFile(configPath).parseJson()
   except:
     result = defaultConfig()
+    writeConfig(result)
     log(&"{configPath} not found, defaults loaded", Info)
     return
-  
+
   result = Config()
   result.tempDir = getTempDir()
   result.term = termInit()
@@ -105,7 +105,7 @@ proc loadConfig*(): Config =
   result.backupEnabled = configJson["backupEnabled"].getBool()
   result.backupDir = configJson["backupDir"].getStr()
   result.githubToken = configJson["githubToken"].getStr()
-  result.addons = parseInstalledAddons(result.addonJsonFile)   
+  result.addons = parseInstalledAddons(result.addonJsonFile)
   log("Configuration loaded", Info)
 
 proc setBackup*(arg: string) =
