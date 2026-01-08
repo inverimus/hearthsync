@@ -574,9 +574,9 @@ proc userSelectGameVersionCurse(addon: Addon, options: seq[string]): string {.gc
           else: version = "Classic"
         else: discard
       if selected == i + 1:
-        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {version} - {option}", resetStyle)
+        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {version}", resetStyle)
       else:
-        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {version} - {option}", resetStyle)
+        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {version}", resetStyle)
     let newSelected = t.handleSelection(options.len, selected)
     if newSelected == selected:
       t.clear(addon.line .. addon.line + options.len)

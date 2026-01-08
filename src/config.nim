@@ -74,6 +74,19 @@ proc writeConfig*(config: Config) =
   except Exception as e:
     log(&"Fatal error writing: {configPath}", Fatal, e)
 
+proc defaultConfig(): Config =
+  result = Config()
+  result.tempDir = getTempDir()
+  result.term = termInit()
+  result.logLevel = Debug
+  result.addonJsonFile = getCurrentDir() / "WTF" / "lycan_addons.json"
+  result.installDir = getCurrentDir() / "Interface" / "AddOns"
+  result.backupEnabled = true
+  result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
+  result.githubToken = ""
+  result.addons = @[]
+  writeConfig(result)
+
 proc loadConfig*(): Config =
   result = Config()
   result.tempDir = getTempDir()
