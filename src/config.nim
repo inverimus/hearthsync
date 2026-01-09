@@ -60,9 +60,6 @@ let configPath = getCurrentDir() / "lycan.cfg"
 
 proc writeConfig*(config: Config) =
   var json = newJObject()
-  
-  json["addonJsonFile"] = %config.addonJsonFile
-  json["installDir"] = %config.installDir
   json["backupEnabled"] = %config.backupEnabled
   json["backupDir"] = %config.backupDir
   json["githubToken"] = %config.githubToken
@@ -74,34 +71,27 @@ proc writeConfig*(config: Config) =
   except Exception as e:
     log(&"Fatal error writing: {configPath}", Fatal, e)
 
-proc defaultConfig(): Config =
+proc loadConfig*(): Config =
   result = Config()
   result.tempDir = getTempDir()
   result.term = termInit()
-  result.logLevel = Debug
   result.addonJsonFile = getCurrentDir() / "WTF" / "lycan_addons.json"
   result.installDir = getCurrentDir() / "Interface" / "AddOns"
-  result.backupEnabled = true
-  result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
-  result.githubToken = ""
-  result.addons = @[]
-
-proc loadConfig*(): Config =
+  
   var configJson: JsonNode
   try:
     configJson = readFile(configPath).parseJson()
   except:
-    result = defaultConfig()
+    result.logLevel = Debug
+    result.backupEnabled = true
+    result.backupDir = getCurrentDir() / "Interface" / "lycan_backup"
+    result.githubToken = ""
+    result.addons = @[]
     writeConfig(result)
     log(&"{configPath} not found, defaults loaded", Info)
     return
 
-  result = Config()
-  result.tempDir = getTempDir()
-  result.term = termInit()
   result.logLevel = parseEnum[LogLevel](configJson["logLevel"].getStr())
-  result.addonJsonFile = configJson["addonJsonFile"].getStr()
-  result.installDir = configJson["installDir"].getStr()
   result.backupEnabled = configJson["backupEnabled"].getBool()
   result.backupDir = configJson["backupDir"].getStr()
   result.githubToken = configJson["githubToken"].getStr()
