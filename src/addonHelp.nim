@@ -1,7 +1,4 @@
-import std/httpclient
-import std/json
 import std/options
-import std/os
 import std/[strformat, strutils]
 
 import config

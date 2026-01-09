@@ -39,7 +39,7 @@ proc writeAddons*(addons: var seq[Addon]) =
     except Exception as e:
       log(&"Fatal error writing installed addons file: {configData.addonJsonFile}", Fatal, e)
 
-proc setDownloadFilename*(addon: Addon, json: JsonNode, response: Response) {.gcsafe.} =
+proc setDownloadFilename(addon: Addon, json: JsonNode, response: Response) {.gcsafe.} =
   var downloadName: string
   case addon.kind:
   of Curse:
@@ -51,7 +51,7 @@ proc setDownloadFilename*(addon: Addon, json: JsonNode, response: Response) {.gc
       downloadName = addon.downloadUrl.split('/')[^1]
   addon.filename = addon.config.tempDir / downloadName
 
-proc writeDownloadedFile*(addon: Addon, response: Response) {.gcsafe.} =
+proc writeDownloadedFile(addon: Addon, response: Response) {.gcsafe.} =
   var file: File
   try:
     file = open(addon.filename, fmWrite)
@@ -104,7 +104,7 @@ proc tocDir(path: string): bool {.gcsafe.} =
       var (dir, name, ext) = splitFile(file)
       if ext == ".toc":
         if name != lastPathPart(dir):
-          let p = re("(.+?)(?:$|[-_](?i:mainline|classic|vanilla|classic_era|wrath|tbc|bcc|cata|wotlk))", flags = {reIgnoreCase})
+          let p = re("(.+?)(?:$|[-_](?i:mainline|classic|vanilla|classic_era|wrath|tbc|bcc|cata|wotlk|mop))", flags = {reIgnoreCase})
           var m: array[2, string]
           discard find(cstring(name), p, m, 0, len(name))
           name = m[0]
