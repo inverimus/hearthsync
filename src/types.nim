@@ -16,12 +16,6 @@ type
     Debug = "DEBUG"
     None = "None"
 
-  Mode* = enum
-    Retail = "Retail",
-    Vanilla = "Vanilla",
-    Classic = "Classic",
-    None = "None"
-
   AddonState* = enum
     Checking = "Checking",
     Parsing = "Parsing",
@@ -52,7 +46,6 @@ type
     e*: ref Exception
 
   Config* = ref object
-    mode*: Mode
     tempDir*: string
     installDir*: string
     backupEnabled*: bool

@@ -112,10 +112,10 @@ proc setBackup*(arg: string) =
   case arg.toLower()
   of "y", "yes", "on", "enable", "enabled", "true":
     configData.backupEnabled = true
-    log(&"Backup enabled for {configData.mode}", Info)
+    log(&"Backup enabled", Info)
   of "n", "no", "off", "disable", "disabled", "false":
     configData.backupEnabled = false
-    log(&"Backup disabled for {configData.mode}", Info)
+    log(&"Backup disabled", Info)
   else:
     let dir = arg.strip(chars = {'\'', '"'}).normalizePathEnd()
     if not dirExists(dir):
