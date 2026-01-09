@@ -21,12 +21,14 @@ import std/terminal
 import std/times
 
 import addon
+import addonHelp
 import config
 import help
 import term
 import types
 import logger
 import messages
+import files
 
 proc validId(id: string, kind: AddonKind): bool =
   case kind

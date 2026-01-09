@@ -4,32 +4,13 @@ import std/[strformat, strutils]
 import std/times
 import std/terminal
 
+import addonHelp
 import config
 import types
 import term
 
 const DARK_GREY: Color = Color(0x20_20_20)
 const LIGHT_GREY: Color = Color(0x34_34_34)
-
-proc getVersion*(addon: Addon): string =
-  if addon.version.isEmptyOrWhitespace and addon.startVersion.isEmptyOrWhitespace: 
-    return ""
-  case addon.kind
-  of GithubRepo: 
-    if addon.version.isEmptyOrWhitespace: 
-      return addon.startVersion[0 ..< 7]
-    return addon.version[0 ..< 7]
-  else:
-    if addon.version.isEmptyOrWhitespace: 
-      return addon.startVersion
-    return addon.version
-
-proc getName*(addon: Addon): string =
-  if addon.overrideName.isSome: 
-    return addon.overrideName.get
-  if addon.name.isEmptyOrWhitespace:
-    return $addon.kind & ':' & addon.project
-  return addon.name
 
 proc stateMessage*(addon: Addon, nameSpace, versionSpace: int) = 
   case addon.state
