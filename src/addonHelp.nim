@@ -9,7 +9,7 @@ proc getVersion*(addon: Addon): string =
   if addon.version.isEmptyOrWhitespace and addon.startVersion.isEmptyOrWhitespace: 
     return ""
   case addon.kind
-  of GithubRepo: 
+  of GithubRepo, Wago: 
     if addon.version.isEmptyOrWhitespace: 
       return addon.startVersion[0 ..< 7]
     return addon.version[0 ..< 7]
@@ -76,3 +76,5 @@ proc getLatestUrl*(addon: Addon): string {.gcsafe.} =
     return &"https://api.mmoui.com/v3/game/WOW/filedetails/{addon.project}.json"
   of GithubRepo:
     return &"https://api.github.com/repos/{addon.project}/commits/{addon.branch.get}"
+  of Wago:
+    return &"https://addons.wago.io/addons/{addon.project}/versions?stability=stable"

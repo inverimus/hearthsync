@@ -3,6 +3,7 @@ import std/httpclient
 import std/json
 import std/options
 import std/os
+import std/re
 import std/sequtils
 import std/[strformat, strutils]
 import std/sugar
@@ -62,6 +63,8 @@ proc setName(addon: Addon, json: JsonNode, name: string = "none") {.gcsafe.} =
     addon.name = json["name"].getStr()
   of Wowint:
     addon.name = json[0]["UIName"].getStr()
+  of Wago:
+    addon.name = json["props"]["addon"]["display_name"].getStr()
 
 proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
@@ -77,7 +80,7 @@ proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
   of Gitlab:
     let v = json[0]["tag_name"].getStr()
     addon.version = if not v.isEmptyOrWhitespace: v else: json[0]["name"].getStr()
-  of Tukui:
+  of Tukui, Wago:
     addon.version = json["version"].getStr()
   of Wowint:
     addon.version = json[0]["UIVersion"].getStr()
@@ -103,6 +106,8 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.downloadUrl = json["url"].getStr()
   of Wowint:
     addon.downloadUrl = json[0]["UIDownload"].getStr()
+  of Wago:
+    addon.downloadUrl = json["props"]["releases"]["data"][0]["download_link"].getStr()
 
 proc getLatest(addon: Addon): Response {.gcsafe.} =
   addon.setAddonState(Checking, &"Checking: {addon.getName()} getting latest version information")
@@ -145,10 +150,19 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   var json: JsonNode
   let response = addon.getLatest()
   if addon.state == Failed: return
-  try:
-    json = parseJson(response.body)
-  except Exception as e:
-    addon.setAddonState(Failed, "JSON parsing error.", &"{addon.getName()}: JSON parsing error", e)
+  case addon.kind
+  of Wago:
+    let pattern = re("""data-page="({.+?})"""")
+    var matches: array[1, string]
+    let found = find(cstring(response.body), pattern, matches, 0, len(response.body))
+    if found != -1:
+      let clean = matches[0].replace("&quot;", "\"").replace("\\/", "/").replace("&amp;", "&")
+      json = parseJson(clean)
+  else:
+    try:
+      json = parseJson(response.body)
+    except Exception as e:
+      addon.setAddonState(Failed, "JSON parsing error.", &"{addon.getName()}: JSON parsing error", e)
   case addon.kind:
   of Curse:
     if addon.action == Install:

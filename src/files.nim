@@ -42,6 +42,10 @@ proc writeAddons*(addons: var seq[Addon]) =
 proc setDownloadFilename(addon: Addon, json: JsonNode, response: Response) {.gcsafe.} =
   var downloadName: string
   case addon.kind:
+  of Wago:
+    # The actual filename is included in a 302 redirect which is handled automatically by httpclient. We should be able to
+    # make a request with maxRedirects = 0 to get the actual name, but it's not worth the overhead.
+    downloadName = addon.project & ".zip"
   of Curse:
     downloadName = json["fileName"].getStr()
   else:
@@ -81,8 +85,8 @@ proc download*(addon: Addon, json: JsonNode) {.gcsafe.} =
       response = client.get(addon.downloadUrl)
     except Exception as e:
       if retryCount > 4:
-        addon.setAddonState(Failed, &"Error while trying to download: {addon.getLatestUrl()}",
-          &"{addon.getName()}: download failed for {addon.getLatestUrl()}", e)
+        addon.setAddonState(Failed, &"Error while trying to download: {addon.downloadUrl}",
+          &"{addon.getName()}: download failed for {addon.downloadUrl}", e)
         return
       retryCount += 1
       sleep(100)
@@ -90,8 +94,8 @@ proc download*(addon: Addon, json: JsonNode) {.gcsafe.} =
     if response.status.contains("200"):
       break
     if retryCount > 4:
-      addon.setAddonState(Failed, &"Bad response downloading {response.status}: {addon.getLatestUrl()}",
-        &"{addon.getName()}: download failed. Response code {response.status} from {addon.getLatestUrl()}")
+      addon.setAddonState(Failed, &"Bad response downloading {response.status}: {addon.downloadUrl}",
+        &"{addon.getName()}: download failed. Response code {response.status} from {addon.downloadUrl}")
       return
     retryCount += 1
     sleep(100)

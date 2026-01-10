@@ -40,13 +40,15 @@ proc validId(id: string, kind: AddonKind): bool =
     let found = find(cstring(id), pattern, match, 0, len(id))
     if not found == -1:
       return true
+  of Wago:
+    return not id.contains("/")
   else:
     discard
   return false
 
 proc addonFromUrl(url: string): Option[Addon] =
   var urlmatch: array[2, string]
-  let pattern = re"^(?:https?://)?(?:www\.)?(.+)\.(?:com|org)/(.+[^/\n])"
+  let pattern = re"^(?:https?://)?(?:www\.)?(.+)\.(?:com|org|io)/(.+[^/\n])"
   let found = find(cstring(url), pattern, urlmatch, 0, len(url))
   if found == -1 or urlmatch[1] == "":
     echo &"Unable to determine addon from {url}."
@@ -83,6 +85,13 @@ proc addonFromUrl(url: string): Option[Addon] =
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
       if validId(m[0], Wowint):
         return some(newAddon(m[0], Wowint))
+    of "addons.wago":
+      let p = re"^addons\/(.+)"
+      var m: array[1, string]
+      discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
+      log(&"Wago addon name: {m[0]}")
+      if validId(m[0], Wago):
+        return some(newAddon(m[0], Wago))
     else:
       discard
   return none(Addon)
@@ -247,7 +256,6 @@ proc main() {.inline.} =
     ids: seq[int16]
   case action
   of Install:
-    log("Installing addons...")
     var addonStrings: seq[string]
     var f: File
     if args.len > 0 and f.open(args[0]):

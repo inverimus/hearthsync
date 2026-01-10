@@ -37,7 +37,7 @@ type
     List = "List"
   
   AddonKind* = enum
-    Github, GithubRepo, Gitlab, Tukui, Wowint, Curse
+    Github, GithubRepo, Gitlab, Tukui, Wowint, Curse, Wago
 
   LogMessage* = ref object
     level*: LogLevel
