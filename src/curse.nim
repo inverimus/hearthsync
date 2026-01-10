@@ -11,30 +11,28 @@ import addonHelp
 
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   result = json["fileName"].getStr().split('-')[0]
-  if addon.name.endsWith(".zip"):
+  if result.endsWith(".zip"):
     result = json["fileName"].getStr().split('_')[0]
-  if addon.name.endsWith(".zip"):
+  if result.endsWith(".zip"):
     result = json["fileName"].getStr().split('.')[0]
 
 proc versionCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   try:
     result = json["displayName"].getStr()
-    if addon.version.endsWith(".zip"):
+    if result.endsWith(".zip"):
       result = json["dateModified"].getStr()  
   except KeyError:
     result = json["dateModified"].getStr()
 
 proc extractJsonCurse*(addon: Addon, json: JsonNode): JsonNode {.gcsafe.} =
+  if addon.gameVersion == "Retail":
+    return json["data"][0]
   var gameVersions: seq[string]
   for data in json["data"]:
     gameVersions.fromJson(data["gameVersions"])
-    for version in gameVersions:
-      if addon.gameVersion == "Retail":
-        if version.split(".")[0] == RETAIL_VERSION:
-          return data
-      else:
-        if version.rsplit(".", maxSplit = 1)[0] == addon.gameVersion:
-          return data
+    for version in gameVersions:  
+      if version.rsplit(".", maxSplit = 1)[0] == addon.gameVersion:
+        return data
   addon.setAddonState(Failed, &"JSON Error: No game version matches current verion of {addon.gameVersion}.", 
     &"JSON Error: {addon.getName()}: no game version matches current mode of {addon.gameVersion}.")
   return
@@ -108,9 +106,9 @@ proc userSelectGameVersion(addon: Addon, options: seq[string]): string {.gcsafe.
         let minorVersion = parseInt(optionSplit[1])
         versionName = getVersionName(majorVersion, minorVersion)
       if selected == i + 1:
-        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {versionName} - {option}", resetStyle)
+        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {versionName}", resetStyle)
       else:
-        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {versionName} - {option}", resetStyle)
+        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {versionName}", resetStyle)
     let newSelected = handleSelection(options.len, selected)
     if newSelected == selected:
       t.clear(addon.line .. addon.line + options.len)
@@ -136,12 +134,10 @@ proc chooseJsonCurse*(addon: Addon, json: JsonNode): JsonNode {.gcsafe.} =
   gameVersions.insert("Retail", 0)
   var selectedVersion = addon.userSelectGameVersion(gameVersions)
   addon.gameVersion = selectedVersion
+  if selectedVersion == "Retail":
+    return json["data"][0]
   for data in json["data"]:
     var tmp: seq[string]
     tmp.fromJson(data["gameVersions"])
-    if selectedVersion == "Retail":
-      if tmp.anyIt(it.split(".")[0] == RETAIL_VERSION):
-        return data
-    else:
-      if tmp.anyIt(it.rsplit(".", maxSplit = 1)[0] == selectedVersion):
-        return data
+    if tmp.anyIt(it.rsplit(".", maxSplit = 1)[0] == selectedVersion):
+      return data

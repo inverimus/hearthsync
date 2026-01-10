@@ -1,7 +1,6 @@
 import std/options
 import std/times
 
-const RETAIL_VERSION* = "12"
 const POLLRATE* = 20
 
 type
