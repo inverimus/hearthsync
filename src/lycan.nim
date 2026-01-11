@@ -62,8 +62,8 @@ proc addonFromUrl(url: string): Option[Addon] =
       discard find(cstring(urlmatch[1]), pattern, m, 0, len(urlmatch[1]))
       if m[0] == "":
         echo &"Unable to determine addon from {url}."
-        echo "Make sure you have the corret URL. Go to the addon page, click download, and copy the 'try again' link."
-        echo "Or just find the Project ID on the right side of the addon page and use lycan -i curse:<ID>"
+        echo "Make sure you have the corret URL. Start a manual download then copy the 'try again' link."
+        echo "For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page and use lycan -i curse:<ID>"
       else:
         if validProject(m[0], Curse):
           return some(newAddon(m[0], Curse))
