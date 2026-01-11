@@ -31,20 +31,20 @@ import logger
 import messages
 import files
 
-proc validId(id: string, kind: AddonKind): bool =
+proc validProject(project: string, kind: AddonKind): bool =
   case kind
   of Curse, Wowint:
-    return id.all(isDigit)
+    return project.all(isDigit)
   of Tukui:
-    return id == "tukui" or id == "elvui"
+    return project == "tukui" or project == "elvui"
   of Github, Gitlab:
     var match: array[2, string]
     let pattern = re"^[^\/]*\/[^\/]*$"
-    let found = find(cstring(id), pattern, match, 0, len(id))
+    let found = find(cstring(project), pattern, match, 0, len(project))
     if not found == -1:
       return true
   of Wago:
-    return not id.contains("/")
+    return not project.contains("/")
   else:
     discard
   return false
@@ -65,34 +65,34 @@ proc addonFromUrl(url: string): Option[Addon] =
         echo "Make sure you have the corret URL. Go to the addon page, click download, and copy the 'try again' link."
         echo "Or just find the Project ID on the right side of the addon page and use lycan -i curse:<ID>"
       else:
-        if validId(m[0], Curse):
+        if validProject(m[0], Curse):
           return some(newAddon(m[0], Curse))
     of "github":
       let p = re"^(.+?/.+?)(?:/|$)(?:tree/)?(.+)?"
       var m: array[2, string]
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      if validId(m[0], Github):
+      if validProject(m[0], Github):
         if m[1] == "":
           return some(newAddon(m[0], Github))
         else:
           return some(newAddon(m[0], GithubRepo, branch = some(m[1])))
     of "gitlab":
-      if validId(urlmatch[1], Gitlab):
+      if validProject(urlmatch[1], Gitlab):
         return some(newAddon(urlmatch[1], Gitlab))
     of "tukui":
-      if validId(urlmatch[1], Tukui):
+      if validProject(urlmatch[1], Tukui):
         return some(newAddon(urlmatch[1], Tukui))
     of "wowinterface":
       let p = re"^downloads\/info(\d+)-?"
       var m: array[1, string]
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      if validId(m[0], Wowint):
+      if validProject(m[0], Wowint):
         return some(newAddon(m[0], Wowint))
     of "addons.wago":
       let p = re"^addons\/(.+)"
       var m: array[1, string]
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      if validId(m[0], Wago):
+      if validProject(m[0], Wago):
         return some(newAddon(m[0], Wago))
     else:
       discard
@@ -109,19 +109,19 @@ proc addonFromProject(s: string): Option[Addon] =
   let id = match[1].toLower()
   case source
   of "curse": 
-    if validId(id, Curse):
+    if validProject(id, Curse):
       return some(newAddon(id, Curse))
   of "wowint":
-    if validId(id, Wowint):
+    if validProject(id, Wowint):
       return some(newAddon(id, Wowint))
   of "tukui":
-    if validId(id, Tukui):
+    if validProject(id, Tukui):
       return some(newAddon(id, Tukui))
   of "gitlab":
-    if validId(id, Gitlab):
+    if validProject(id, Gitlab):
       return some(newAddon(id, Gitlab))
   of "github":
-    if validId(id, Github):
+    if validProject(id, Github):
       var match: array[2, string]
       let pattern = re"^(.+?)(?:@(.+))?$"
       discard find(cstring(id), pattern, match, 0, len(id))
