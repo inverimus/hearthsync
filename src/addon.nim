@@ -120,6 +120,7 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
       addon.setDownloadUrlWago(json)
 
 proc getLatest(addon: Addon): Response {.gcsafe.} =
+  if addon.state == Failed: return
   addon.setAddonState(Checking, &"Checking: {addon.getName()} getting latest version information")
   let url = addon.getLatestUrl()
   var headers = newHttpHeaders()
@@ -185,6 +186,12 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
         return node
     addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
     return
+  of Github:
+    try:
+      if json["message"].getStr() == "Not Found":
+        addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
+    except KeyError:
+      discard
   else:
     discard
   return json

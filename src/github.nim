@@ -117,6 +117,12 @@ proc fallbackToGithubRepo*(addon: Addon, client: HttpClient, response: Response)
     log(&"{addon.getName()}: Got {response.status}: {addon.getLatestUrl()} - This usually means no releases are available so switching to trying main/master branch", Warning)
     let resp = client.get(&"https://api.github.com/repos/{addon.project}/branches")
     let branches = parseJson(resp.body)
+    try:
+      if branches["message"].getStr() == "Not Found":
+        addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
+        return
+    except KeyError:
+      discard
     let names = collect(for item in branches: item["name"].getStr())
     if names.contains("master"):
       addon.branch = some("master")
