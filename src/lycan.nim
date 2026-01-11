@@ -108,18 +108,16 @@ proc addonFromProject(s: string): Option[Addon] =
   let source = match[0].toLower()
   let id = match[1].toLower()
   case source
-  of "curse": 
-    if validProject(id, Curse):
-      return some(newAddon(id, Curse))
-  of "wowint":
-    if validProject(id, Wowint):
-      return some(newAddon(id, Wowint))
-  of "tukui":
-    if validProject(id, Tukui):
-      return some(newAddon(id, Tukui))
-  of "gitlab":
-    if validProject(id, Gitlab):
-      return some(newAddon(id, Gitlab))
+  of "curse":  
+    if validProject(id, Curse):  return some(newAddon(id, Curse))
+  of "wowint": 
+    if validProject(id, Wowint): return some(newAddon(id, Wowint))
+  of "tukui":  
+    if validProject(id, Tukui):  return some(newAddon(id, Tukui))
+  of "gitlab": 
+    if validProject(id, Gitlab): return some(newAddon(id, Gitlab))
+  of "wago":   
+    if validProject(id, Wago):   return some(newAddon(id, Wago))
   of "github":
     if validProject(id, Github):
       var match: array[2, string]
@@ -129,9 +127,6 @@ proc addonFromProject(s: string): Option[Addon] =
         return some(newAddon(id, Github))
       else:
         return some(newAddon(match[0], GithubRepo, branch = some(match[1])))
-  of "wago":
-    if validId(id, Wago):
-      return some(newAddon(id, Wago))
   else: 
     discard
   return none(Addon)
@@ -335,15 +330,15 @@ proc main() {.inline.} =
       addons.sort((a, z) => int(a.time < z.time))
     addons.list()
   of Export:
-    let filename = "lycan_addons"
-    let f = open(getCurrentDir() / filename, fmWrite)
+    let filename = getCurrentDir() / "exported_addons"
+    let f = open(filename, fmWrite)
     for addon in configData.addons:
-      var exportName: string
-      case addon.kind
-      of GithubRepo:
-        exportName = &"Github:{addon.project}@{addon.branch.get}"
-      else:
-        exportName = &"{$addon.kind}:{addon.project}"
+      let kind = case addon.kind
+      of GithubRepo: "Github"
+      else: $addon.kind
+      var exportName = &"{kind}:{addon.project}"
+      if addon.branch.isSome:
+        exportName &= &"@{addon.branch.get}"
       echo &"  Exported {addon.getName()}:  {exportName}"
       f.writeLine(exportName)
     f.close()
