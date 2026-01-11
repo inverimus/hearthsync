@@ -92,7 +92,6 @@ proc addonFromUrl(url: string): Option[Addon] =
       let p = re"^addons\/(.+)"
       var m: array[1, string]
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      log(&"Wago addon name: {m[0]}")
       if validId(m[0], Wago):
         return some(newAddon(m[0], Wago))
     else:
