@@ -126,9 +126,8 @@ proc chooseJsonCurse*(addon: Addon, json: JsonNode): JsonNode {.gcsafe.} =
     tmp.fromJson(data["gameVersions"])
     for item in tmp:
       gameVersionsSet.incl(getVersionName(item))
-  var gameVersions = gameVersionsSet.toSeq()
   var selectedVersion: string
-  selectedVersion = addon.userSelectGameVersion(gameVersions)
+  selectedVersion = addon.userSelectGameVersion(gameVersionsSet.toSeq())
   addon.gameVersion = selectedVersion
   for data in json["data"]:
     var tmp: seq[string]
