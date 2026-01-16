@@ -113,8 +113,6 @@ proc userSelectGameVersion(addon: Addon, options: seq[string]): string {.gcsafe.
     elif newSelected != -1:
       selected = newSelected
 
-import logger
-
 proc chooseJsonCurse*(addon: Addon, json: JsonNode): JsonNode {.gcsafe.} =
   if json["data"].len == 0:
     addon.setAddonState(Failed, "Addon not found in JSON.")
