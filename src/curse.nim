@@ -113,11 +113,14 @@ proc userSelectGameVersion(addon: Addon, options: seq[string]): string {.gcsafe.
     elif newSelected != -1:
       selected = newSelected
 
+import logger
+
 proc chooseJsonCurse*(addon: Addon, json: JsonNode): JsonNode {.gcsafe.} =
   if json["data"].len == 0:
     addon.setAddonState(Failed, "Addon not found in JSON.")
     return
   var gameVersionsSet: OrderedSet[string]
+  # json["data"] is only so big so if the last update that contains a game version was too long ago we cannot get it
   for data in json["data"]:
     var versions: seq[string]
     versions.fromJson(data["gameVersions"])
