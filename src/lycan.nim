@@ -147,10 +147,11 @@ proc addonFromId(id: int16): Option[Addon] =
   return none(Addon)
 
 proc changeConfig(args: seq[string]) =
+  let t = configData.term
   if len(args) == 0:
     showConfig()
   if len(args) < 2:
-    echo "Missing argument\n"
+    t.write(0, fgRed, styleBright, "Error: ", fgWhite, "Missing argument\n\n", resetStyle)
     displayHelp("config")
   for i in 0 ..< len(args) - 1:
     let item = args[i]
@@ -160,7 +161,7 @@ proc changeConfig(args: seq[string]) =
     of "github":
       setGithubToken(args[i + 1]); break
     else:
-      echo &"Unrecognized option {item}\n"
+      t.write(0, fgRed, styleBright, "Error: ", fgWhite, "Unrecognized option ", fgCyan, item, "\n", resetStyle)
       displayHelp("config")
   writeConfig(configData)
   quit()
@@ -259,7 +260,7 @@ proc main() {.inline.} =
       addons.add(addon)
       line += 1
     if addons.len == 0:
-      t.write(2, fgRed, styleBright, "\nError: ", fgWhite, "Unable to parse any addons to install.\n", resetStyle)
+      t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse any addons to install.\n", resetStyle)
       quit()
   of Update, Empty, Reinstall:
     for addon in configData.addons:
@@ -293,7 +294,7 @@ proc main() {.inline.} =
     try:
       id = int16(args[0].parseInt())
     except:
-      t.write(2, fgRed, styleBright, "\nError: ", fgWhite, "Unable to parse id.\n", resetStyle)
+      t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse id.\n", resetStyle)
       t.write(2, fgWhite, "Usage: lycan -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
       quit()
     var opt = addonFromId(id)
@@ -308,7 +309,7 @@ proc main() {.inline.} =
       addon.action = Name
       addons.add(addon)
     else:
-      t.write(2, fgRed, styleBright, "\nError: ", fgWhite, &"Unable to find addon with id: ", fgCyan, $id, "\n", resetStyle)
+      t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to find addon with id: ", fgCyan, $id, "\n", resetStyle)
   of List:
     addons = configData.addons
     if "t" in args or "time" in args:

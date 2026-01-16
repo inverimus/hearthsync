@@ -8,6 +8,7 @@ import std/sequtils
 import std/strformat
 import std/strutils
 import std/sugar
+import std/terminal
 import std/times
 
 import config
@@ -247,14 +248,14 @@ proc unpin(addon: Addon) =
   addon.setAddonState(Unpinned)
 
 proc list*(addons: seq[Addon]) =
+  let t = configData.term
   if addons.len == 0:
-    echo "No addons installed"
+    t.write(2, fgWhite, "No addons installed\n", resetStyle)
     quit()
   for line, addon in enumerate(addons):
     addon.state = List
     addon.line = line
   let 
-    t = configData.term
     nameSpace = addons[addons.mapIt(it.getName().len).maxIndex()].getName().len + 2
     versionSpace = addons[addons.mapIt(it.getVersion().len).maxIndex()].getVersion().len + 2
   for addon in addons:

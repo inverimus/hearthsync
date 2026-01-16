@@ -4,6 +4,7 @@ import std/options
 import std/os
 import std/strformat
 import std/strutils
+import std/terminal
 import std/times
 
 import types
@@ -49,7 +50,7 @@ proc parseInstalledAddons(filename: string): seq[Addon] =
   try:
     addonsJson = readFile(filename).parseJson()
   except Exception as e:
-    echo &"Fatal error parsing installed addons file: {filename}"
+    configData.term.write(2, fgRed, styleBright, "Error: ", fgWhite, "Fatal error parsing installed addons file: ", fgCyan, filename, "\n", resetStyle)
     log(&"Fatal error parsing installed addons file: {filename}", Fatal, e)
     quit(1)
   for addon in addonsJson:
@@ -102,6 +103,7 @@ proc loadConfig*(): Config =
   log("Configuration loaded", Info)
 
 proc setBackup*(arg: string) =
+  let t = configData.term
   case arg.toLower()
   of "y", "yes", "on", "enable", "enabled", "true":
     configData.backupEnabled = true
@@ -112,25 +114,30 @@ proc setBackup*(arg: string) =
   else:
     let dir = arg.strip(chars = {'\'', '"'}).normalizePathEnd()
     if not dirExists(dir):
-      echo &"Error: Path provided does not exist:\n  {dir}"
+      t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Path provided does not exist:\n  ", fgCyan, dir, "\n", resetStyle)
       quit()
     for kind, path in walkDir(configData.backupDir):
       if kind == pcFile:
         moveFile(path, arg / lastPathPart(path))
     configData.backupDir = arg
     log(&"New backup directory set: {dir}", Info)
-    echo &"Backup directory now: {dir}"
-    echo "Existing backup files have been moved."
+    t.write(2, fgWhite, "Backup directory set to: ", fgCyan, dir, "\n", resetStyle)
+    t.write(2, fgWhite, "Existing backup files have been moved.\n", resetStyle)
 
 proc setGithubToken*(token: string) =
   configData.githubToken = token
   log(&"Github token set to: {token}", Info)
 
 proc showConfig*() =
-  echo &"  Logging level: {configData.logLevel}"
-  echo &"  Backups enabled: {configData.backupEnabled}"
+  let t = configData.term
+  t.write(2, fgWhite, "Logging level: ", fgCyan, $configData.logLevel, "\n", resetStyle)
+  t.write(2, fgWhite, "Backups enabled: ", fgCyan, $configData.backupEnabled, "\n", resetStyle)
   if configData.backupEnabled:
-    echo &"  Backups directory: {configData.backupDir}"
+    t.write(2, fgWhite, "Backups directory: ", fgCyan, configData.backupDir, "\n", resetStyle)
+  if not configData.githubToken.isEmptyOrWhitespace:
+    t.write(2, fgWhite, "Github API token is set\n", resetStyle)
+  else:
+    t.write(2, fgWhite, "Github API token is not set\n", resetStyle)
   quit()
 
 proc setLogLevel*(arg: string) =
@@ -143,6 +150,7 @@ proc setLogLevel*(arg: string) =
   of "info": newLevel = Info
   of "fatal": newLevel = Fatal
   else: 
-    echo "Valid logging levels are off, info, debug, warn, and fatal"
-    quit()
+    configData.term.write(2, fgRed, styleBright, "Error: ", fgWhite, "Invalid logging level\n", resetStyle) 
+    configData.term.write(2, fgWhite, "Valid logging levels are off, info, debug, warn, and fatal\n", resetStyle)
+    quit(1)
   configData.logLevel = newLevel
