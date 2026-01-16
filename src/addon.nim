@@ -140,8 +140,7 @@ proc getLatest(addon: Addon): Response {.gcsafe.} =
       response = client.get(url)
     except Exception as e:
       if retryCount > 4:
-        addon.setAddonState(Failed, &"No response retrieving latest addon info: {addon.getLatestUrl()}",
-        &"{addon.getName()}: Get latest JSON no response.", e)
+        addon.setAddonState(Failed, &"No response retrieving latest addon info: {addon.getLatestUrl()}", e)
         return
       retryCount += 1
       sleep(100)
@@ -153,8 +152,7 @@ proc getLatest(addon: Addon): Response {.gcsafe.} =
         addon.fallbackToGithubRepo(client, response)
         return addon.getLatest()
       else:
-        addon.setAddonState(Failed, &"Bad response retrieving latest addon info - {response.status}: {addon.getLatestUrl()}",
-        &"{addon.getName()}: Get latest JSON bad response: {response.status}")
+        addon.setAddonState(Failed, &"Bad response retrieving latest addon info - {response.status}: {addon.getLatestUrl()}")
       return
     retryCount += 1
     sleep(100)
@@ -175,7 +173,7 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
     try:
       json = parseJson(response.body)
     except Exception as e:
-      addon.setAddonState(Failed, "JSON parsing error.", &"{addon.getName()}: JSON parsing error", e)
+      addon.setAddonState(Failed, "JSON parsing error.", e)
   case addon.kind:
   of Curse:
     if addon.action == Install:
@@ -186,12 +184,12 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
     for node in json:
       if node["slug"].getStr() == addon.project:
         return node
-    addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
+    addon.setAddonState(Failed, "JSON Error: Addon not found.")
     return
   of Github:
     try:
       if json["message"].getStr() == "Not Found":
-        addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
+        addon.setAddonState(Failed, "JSON Error: Addon not found.")
     except KeyError:
       discard
   of Wowint:

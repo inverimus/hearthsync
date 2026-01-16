@@ -58,10 +58,10 @@ proc setAddonState*(addon: Addon, state: AddonState, loggedMsg: string, level: L
   logChannel.send(LogMessage(level: level, msg: loggedMsg, e: nil))
   addonChannel.send(addon.deepCopy())
 
-proc setAddonState*(addon: Addon, state: AddonState, errorMsg: string, loggedMsg: string, e: ref Exception = nil, level: LogLevel = Fatal) {.gcsafe.} =
+proc setAddonState*(addon: Addon, state: AddonState, errorMsg: string, e: ref Exception = nil, level: LogLevel = Fatal) {.gcsafe.} =
   addon.state = state
   addon.errorMsg = errorMsg
-  logChannel.send(LogMessage(level: level, msg: loggedMsg, e: e))
+  logChannel.send(LogMessage(level: level, msg: &"{addon.getName()}: {errorMsg}", e: e))
   addonChannel.send(addon.deepCopy())
 
 proc getLatestUrl*(addon: Addon): string {.gcsafe.} =

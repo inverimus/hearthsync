@@ -33,8 +33,7 @@ proc setDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =
         return
   # if no zip file contains the gameVersion and it is not empty, we fail and ask the user to reinstall
   if not addon.gameVersion.isEmptyOrWhitespace:
-    addon.setAddonState(Failed, &"No matching zip file matching: {addon.gameVersion}. Try reinstalling as file names might have changed.", 
-      &"{addon.getName()}: no matching zip file for {addon.gameVersion}.")
+    addon.setAddonState(Failed, &"No zip file matching: {addon.gameVersion}. Try reinstalling as file names might have changed.")
 
 proc userSelectDownloadGitlab(addon: Addon, options: seq[string]): int {.gcsafe.} =
   let t = addon.config.term
@@ -63,7 +62,7 @@ proc chooseDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =
       options.add(source["url"].getStr())
   case options.len
   of 0:
-    addon.setAddonState(Failed, "No zip file found", &"{addon.getName()}: no zip file found")
+    addon.setAddonState(Failed, "No zip file found")
     return
   of 1:
     addon.downloadUrl = options[0]

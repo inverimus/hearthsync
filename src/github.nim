@@ -12,6 +12,26 @@ import term
 import logger
 import addonHelp
 
+proc fallbackToGithubRepo*(addon: Addon, client: HttpClient, response: Response) {.gcsafe.} =
+  log(&"{addon.getName()}: Got {response.status}: {addon.getLatestUrl()} - This usually means no releases are available so trying main/master branch", Warning)
+  let resp = client.get(&"https://api.github.com/repos/{addon.project}/branches")
+  let branches = parseJson(resp.body)
+  try:
+    if branches["message"].getStr() == "Not Found":
+      addon.setAddonState(Failed, "Addon not found")
+      return
+  except KeyError:
+    discard
+  let names = collect(for item in branches: item["name"].getStr())
+  if names.contains("master"):
+    addon.branch = some("master")
+  elif names.contains("main"):
+    addon.branch = some("main")
+  else:
+    log(&"{addon.getName()}: No branch named master or main avaialable", Warning)
+    addon.setAddonState(Failed, &"Bad response retrieving latest addon info - {response.status}: {addon.getLatestUrl()}")
+  addon.kind = GithubRepo
+
 proc setDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
   let assets = json["assets"]
   # if gameVersion is zipball, use the zipball_url
@@ -41,8 +61,7 @@ proc setDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
       return
   # if no zip file contains the gameVersion and it is not empty, we fail and ask the user to reinstall
   if not addon.gameVersion.isEmptyOrWhitespace:
-    addon.setAddonState(Failed, &"No matching zip file matching: {addon.gameVersion}. Try reinstalling as file names might have changed.", 
-      &"{addon.getName()}: no matching zip file for {addon.gameVersion}.")
+    addon.setAddonState(Failed, &"No zip file matching: {addon.gameVersion}. Try reinstalling as file names might have changed.")
         
 proc userSelectDownloadGithub(addon: Addon, options: seq[string]): int {.gcsafe.} =
   let t = addon.config.term
@@ -81,24 +100,3 @@ proc chooseDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
     let i = addon.userSelectDownloadGithub(options)
     addon.gameVersion = extractVersionFromDifferences(options, i)
     addon.downloadUrl = assets[i]["browser_download_url"].getStr()
-
-proc fallbackToGithubRepo*(addon: Addon, client: HttpClient, response: Response) {.gcsafe.} =
-    log(&"{addon.getName()}: Got {response.status}: {addon.getLatestUrl()} - This usually means no releases are available so switching to trying main/master branch", Warning)
-    let resp = client.get(&"https://api.github.com/repos/{addon.project}/branches")
-    let branches = parseJson(resp.body)
-    try:
-      if branches["message"].getStr() == "Not Found":
-        addon.setAddonState(Failed, "JSON Error: Addon not found.", &"{addon.getName()}: JSON error, addon not found.")
-        return
-    except KeyError:
-      discard
-    let names = collect(for item in branches: item["name"].getStr())
-    if names.contains("master"):
-      addon.branch = some("master")
-    elif names.contains("main"):
-      addon.branch = some("main")
-    else:
-      log(&"{addon.getName()}: No branch named master or main avaialable", Warning)
-      addon.setAddonState(Failed, &"Bad response retrieving latest addon info - {response.status}: {addon.getLatestUrl()}",
-      &"{addon.getName()}: Get latest JSON bad response: {response.status}")
-    addon.kind = GithubRepo

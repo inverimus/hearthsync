@@ -63,12 +63,12 @@ proc writeDownloadedFile(addon: Addon, response: Response) {.gcsafe.} =
   try:
     file = open(addon.filename, fmWrite)
   except Exception as e:
-    addon.setAddonState(Failed, &"Problem opening file {addon.filename}", &"{addon.getName()}: download failed, error opening file {addon.filename}", e)
+    addon.setAddonState(Failed, &"Download failed, problem opening file {addon.filename}", e)
     return
   try:
     system.write(file, response.body)
   except Exception as e:
-    addon.setAddonState(Failed, &"Problem encountered while downloading.", &"{addon.getName()}: download failed, error writing {addon.filename}", e)
+    addon.setAddonState(Failed, &"Download failed, error writing to file {addon.filename}", e)
   file.close()
 
 proc download*(addon: Addon, json: JsonNode) {.gcsafe.} =
@@ -88,8 +88,7 @@ proc download*(addon: Addon, json: JsonNode) {.gcsafe.} =
       response = client.get(addon.downloadUrl)
     except Exception as e:
       if retryCount > 4:
-        addon.setAddonState(Failed, &"Error while trying to download: {addon.downloadUrl}",
-          &"{addon.getName()}: download failed for {addon.downloadUrl}", e)
+        addon.setAddonState(Failed, &"Error while trying to download: {addon.downloadUrl}", e)
         return
       retryCount += 1
       sleep(100)
@@ -97,8 +96,7 @@ proc download*(addon: Addon, json: JsonNode) {.gcsafe.} =
     if response.status.contains("200"):
       break
     if retryCount > 4:
-      addon.setAddonState(Failed, &"Bad response downloading {response.status}: {addon.downloadUrl}",
-        &"{addon.getName()}: download failed. Response code {response.status} from {addon.downloadUrl}")
+      addon.setAddonState(Failed, &"Bad response downloading {response.status}: {addon.downloadUrl}")
       return
     retryCount += 1
     sleep(100)
@@ -174,7 +172,7 @@ proc moveDirs*(addon: Addon) {.gcsafe.} =
     try:
       moveDir(dir, destination)
     except Exception as e:
-      addon.setAddonState(Failed, "Problem moving Addon directories.", &"{addon.getName()}: move directories error", e)
+      addon.setAddonState(Failed, &"Failed to move {dir} to {destination}.", e)
   log(&"{addon.getName()}: Files moved to install directory.", Info)
 
 proc createBackup*(addon: Addon) {.gcsafe.} =
@@ -190,7 +188,7 @@ proc createBackup*(addon: Addon) {.gcsafe.} =
     moveFile(addon.filename, addon.config.backupDir / name)
     log(&"{addon.getName()}: Backup created {addon.config.backupDir / name}", Info)
   except Exception as e:
-    addon.setAddonState(Failed, "Problem creating backup files.", &"{addon.getName()}: create backup error", e)
+    addon.setAddonState(Failed, &"Problem creating backup files at {addon.config.backupDir}", e)
     discard
 
 proc unzip*(addon: Addon) {.gcsafe.} =
@@ -202,5 +200,5 @@ proc unzip*(addon: Addon) {.gcsafe.} =
     extractAll(addon.filename, addon.extractDir)
     log(&"{addon.getName()}: Extracted {addon.filename}", Info)
   except Exception as e:
-    addon.setAddonState(Failed, "Problem unzipping files.", &"{addon.getName()}: unzip error", e)
+    addon.setAddonState(Failed, "Problem unzipping files.", e)
     discard

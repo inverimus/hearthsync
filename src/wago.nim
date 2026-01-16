@@ -14,8 +14,7 @@ proc setDownloadUrlWago*(addon: Addon, json: JsonNode) {.gcsafe.} =
     if data["supported_" & addon.gameVersion & "_patches"].len > 0:
       addon.downloadUrl = data["download_link"].getStr()
       return
-  addon.setAddonState(Failed, &"JSON Error: No release matches current verion of {addon.gameVersion}.", 
-    &"JSON Error: {addon.getName()}: no release matches current version of {addon.gameVersion}.")
+  addon.setAddonState(Failed, &"JSON Error: No release matches current verion of {addon.gameVersion}.")
 
 proc getVersionName(version: string): string =
   case version
