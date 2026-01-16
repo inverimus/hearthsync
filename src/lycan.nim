@@ -316,7 +316,7 @@ proc main() {.inline.} =
       addon.action = Name
       addons.add(addon)
     else:
-      echo &"  No installed addon has id {id}"
+      echo &"  No installed addon has id: {id}"
   of List:
     addons = configData.addons
     if "t" in args or "time" in args:
