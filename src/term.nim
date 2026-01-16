@@ -114,7 +114,7 @@ proc write*(t: Term, s: string) =
   t.f.flushFile()
   t.updatePos(s)
 
-proc write*(t: Term, x, y: int, erase: bool, s: string) =
+proc write*(t: Term, x, y: int, s: string, erase: bool) =
   t.moveTo(x, y, erase)
   t.write(s)
 
@@ -124,7 +124,7 @@ proc exitTerm(t: Term): proc() =
     showCursor()
 
 proc addLine*(t: Term) =
-  t.write(0, t.yMax, false, "\n")
+  t.write(0, t.yMax, "\n", false)
 
 proc clear*(t: Term, range: HSlice[int, int]) =
   for line in range:
@@ -179,15 +179,36 @@ template writeProcessArg(t: Term, cmd: TerminalCmd) =
     t.f.resetAttributes()
 
 macro write*(t: Term, args: varargs[typed]): untyped =
+  var argStart = 0
   result = newNimNode(nnkStmtList)
-  if args.len >= 4 and args[0].typeKind() == ntyInt and args[1].typeKind() == ntyInt and args[2].typeKind() == ntyBool:
+  if args.len >= 3 and args[0].typeKind() == ntyInt and args[1].typeKind() == ntyInt and args[2].typeKind() == ntyBool:
+    argStart = 3
     let x = args[0]
     let y = args[1]
     let erase = args[2]
     result.add(newCall(bindSym"moveTo", t, x, y, erase))
-    for i in 3..<args.len:
-      let item = args[i]
-      result.add(newCall(bindSym"writeProcessArg", t, item))
-  else:
-    for item in args.items:
-      result.add(newCall(bindSym"writeProcessArg", t, item))
+  elif args.len >= 2 and args[0].typeKind() == ntyInt and args[1].typeKind() == ntyInt:
+    argStart = 2
+    let x = args[0]
+    let y = args[1]
+    result.add(newCall(bindSym"moveTo", t, x, y, newLit(false)))
+  elif args.len >= 2 and args[0].typeKind() == ntyInt and args[1].typeKind() == ntyBool:
+    argStart = 2
+    let x = args[0]
+    let erase = args[1]
+    result.add(newCall(bindSym"moveTo", t, x, newDotExpr(t, ident("yMax")), erase))
+  elif args.len >= 1 and args[0].typeKind() == ntyInt:
+    argStart = 1
+    let x = args[0]
+    result.add(newCall(bindSym"moveTo", t, x, newDotExpr(t, ident("yMax")), newLit(false)))
+  elif args.len == 1:
+    argStart = 0
+  for i in argStart ..< args.len:
+    let item = args[i]
+    result.add(newCall(bindSym"writeProcessArg", t, item))
+
+
+
+
+
+

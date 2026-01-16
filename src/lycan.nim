@@ -49,10 +49,12 @@ proc validProject(project: string, kind: AddonKind): bool =
   return false
 
 proc addonFromUrl(url: string): Option[Addon] =
+  let t = configData.term
   var urlmatch: array[2, string]
   let pattern = re"^(?:https?://)?(?:www\.)?(.+)\.(?:com|org|io)/(.+[^/\n])"
   let found = find(cstring(url), pattern, urlmatch, 0, len(url))
   if found == -1 or urlmatch[1] == "":
+    t.write(0, fgRed, styleBright, &"Unable to determine addon from ", fgCyan, url, "\n", resetStyle)
     echo &"Unable to determine addon from {url}."
   case urlmatch[0].toLower()
     of "curseforge":
@@ -360,7 +362,7 @@ proc main() {.inline.} =
   case action
   of Install:
     assignIds(success & configData.addons)
-    success.apply((a: Addon) => t.write(1, a.line, false, fgBlue, &"{a.id:<3}", resetStyle))
+    success.apply((a: Addon) => t.write(1, a.line, fgBlue, &"{a.id:<3}", resetStyle))
   else:
     discard
 
@@ -372,7 +374,7 @@ proc main() {.inline.} =
 
   t.addLine()
   for addon in failed:
-    t.write(0, t.yMax, false, fgRed, styleBright, &"\nError: ", fgCyan, addon.getName(), "\n", resetStyle)
-    t.write(4, t.yMax, false, fgWhite, addon.errorMsg, "\n", resetStyle)
+    t.write(0, fgRed, styleBright, &"\nError: ", fgCyan, addon.getName(), "\n", resetStyle)
+    t.write(4, fgWhite, addon.errorMsg, "\n", resetStyle)
 
 main()

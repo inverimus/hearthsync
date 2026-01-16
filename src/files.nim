@@ -46,7 +46,7 @@ proc exportAddons*(addons: seq[Addon]) =
       exportName &= &"@{addon.branch.get}"
     f.writeLine(exportName)
   f.close()
-  t.write(4, t.yMax, false, fgGreen, &"Wrote {configData.addons.len} addons to {filename}", resetStyle, "\n")
+  t.write(4, fgGreen, &"Wrote {configData.addons.len} addons to {filename}", resetStyle, "\n")
   quit()
 
 proc writeAddons*(addons: var seq[Addon]) =

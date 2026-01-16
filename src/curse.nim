@@ -103,9 +103,9 @@ proc userSelectGameVersion(addon: Addon, options: seq[string]): string {.gcsafe.
   while true:
     for (i, option) in enumerate(options):
       if selected == i + 1:
-        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
+        t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
       else:
-        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
+        t.write(16, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
     let newSelected = handleSelection(options.len, selected)
     if newSelected == selected:
       t.clear(addon.line .. addon.line + options.len)

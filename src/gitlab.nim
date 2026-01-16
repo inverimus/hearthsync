@@ -44,9 +44,9 @@ proc userSelectDownloadGitlab(addon: Addon, options: seq[string]): int {.gcsafe.
     for (i, option) in enumerate(options):
       let name = option.rsplit("/", maxsplit=1)[1]
       if selected == i + 1:
-        t.write(16, addon.line + i + 1, false, bgWhite, fgBlack, &"{i + 1}: {name}", resetStyle)
+        t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {name}", resetStyle)
       else:
-        t.write(16, addon.line + i + 1, false, bgBlack, fgWhite, &"{i + 1}: {name}", resetStyle)
+        t.write(16, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {name}", resetStyle)
     let newSelected = handleSelection(options.len, selected)
     if newSelected == selected:
       t.clear(addon.line .. addon.line + options.len)
