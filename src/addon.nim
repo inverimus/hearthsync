@@ -277,9 +277,6 @@ proc restore*(addon: Addon) =
   if addon.state != Failed:
     removeFile(backups[1])
 
-proc setOverrideName(addon: Addon) =
-  addon.setAddonState(Renamed)
-
 proc workQueue*(addon: Addon) {.thread.} =
   case addon.action
   of Update, Reinstall:
@@ -295,7 +292,7 @@ proc workQueue*(addon: Addon) {.thread.} =
   of Restore:
     addon.restore()
   of Name:
-    addon.setOverrideName()
+    addon.setAddonState(Renamed)
   else: discard
   addon.state = if addon.state == Failed: DoneFailed else: Done
   addonChannel.send(addon)
