@@ -16,10 +16,9 @@ import std/re
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   let name = json["fileName"].getStr()
   let pos = name.find(re"[-_.]")
+  result = name
   if pos != -1:
     result = name[0 ..< pos]
-  else:
-    result = name
 
 proc versionCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   try:
