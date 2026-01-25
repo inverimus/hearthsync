@@ -1,4 +1,3 @@
---mm:orc
---deepcopy:on
---threads:on
---d:ssl
+switch("mm", "orc")
+switch("deepcopy", "on")
+switch("define", "ssl")
