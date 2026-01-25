@@ -14,12 +14,12 @@ import addonHelp
 import std/re
 
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
-  let fileName = json["fileName"].getStr()
-  let pos = fileName.find(re"[-_.]")
+  let name = json["fileName"].getStr()
+  let pos = name.find(re"[-_.]")
   if pos != -1:
-    result = fileName[0 ..< pos]
+    result = name[0 ..< pos]
   else:
-    result = fileName
+    result = name
 
 proc versionCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   try:
