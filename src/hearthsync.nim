@@ -208,9 +208,10 @@ proc processLog() =
 proc parseArgs(): (tuple[action: Action, args: seq[string]]) =
   if commandLineParams().len == 0:
     return (Update, @[])
-  var opt = initOptParser()
-  var action: Action
-  for kind, key, val in opt.getopt():
+  var 
+    opt = initOptParser()
+    action: Action
+  for kind, key, _ in opt.getopt():
     case kind
     of cmdEnd: doAssert(false)
     of cmdShortOption, cmdLongOption:
@@ -253,7 +254,7 @@ proc main() {.inline.} =
     if addons.len == 0:
       t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse any addons to install.\n", resetStyle)
       quit()
-  of Update, Empty, Reinstall:
+  of Update, Reinstall:
     for addon in configData.addons:
       addon.line = line
       addon.action = if action == Reinstall: Reinstall else: Update
@@ -266,7 +267,8 @@ proc main() {.inline.} =
       try:
         ids.add(int16(arg.parseInt()))
       except:
-        continue
+        t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to parse id, instead found {arg}.\n", resetStyle)
+        quit()
     for id in ids:
       var opt = addonFromId(id)
       if opt.isSome:
@@ -285,8 +287,8 @@ proc main() {.inline.} =
     try:
       id = int16(args[0].parseInt())
     except:
-      t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse id.\n", resetStyle)
-      t.write(2, fgWhite, "Usage: lycan -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
+      t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to parse id, instead found {args[0]}\n", resetStyle)
+      t.write(2, fgWhite, &"Usage: {getAppFilename()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
       quit()
     var opt = addonFromId(id)
     if opt.isSome:
@@ -296,7 +298,9 @@ proc main() {.inline.} =
       elif args.len == 2:
         addon.overrideName = some(args[1])
       else:
-        displayHelp()
+        t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Too many arguments.\n", resetStyle)
+        t.write(2, fgWhite, &"Usage: {getAppFilename()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
+        quit()
       addon.action = Name
       addons.add(addon)
     else:
