@@ -12,6 +12,8 @@ import types
 import term
 import addonHelp
 
+import logger
+
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   result = json["fileName"].getStr()
   let pos = result.find(re"[-_.]")
@@ -19,12 +21,14 @@ proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
     result = result[0 ..< pos]
 
 proc versionCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
+  log(json.pretty())
   try:
     result = json["displayName"].getStr()
-    result = result.replace(addon.nameCurse(json), "")
+    log(result)
+    result = result.replace(addon.nameCurse(json), "").replace(".zip", "")
+    log(result)
     result = result.strip(chars = {' ', '_', '-', '.'})
-    if result.endsWith(".zip"):
-      result = json["dateModified"].getStr()
+    log(result)
   except KeyError:
     result = json["dateModified"].getStr()
 
@@ -70,7 +74,7 @@ proc getVersionName(majorVersion, minorVersion: int): string =
     case minorVersion
     of 0..3: result = "Retail"
     else: result = "WotlK Classic"
-  of 2: # The Burning Crusade 
+  of 2: # The Burning Crusade
     case minorVersion
     of 0..4: result = "Retail"
     else: result = "TBC Classic"
@@ -78,7 +82,7 @@ proc getVersionName(majorVersion, minorVersion: int): string =
     case minorVersion
     of 0..12: result = "Retail"
     else: result = "Classic (Vanilla 1.15)"
-  else: 
+  else:
     result = "Unknown"
 
 proc getVersionName(version: string): string =
@@ -91,13 +95,14 @@ proc extractJsonCurse*(addon: Addon, json: JsonNode): JsonNode {.gcsafe.} =
   var gameVersions: seq[string]
   for data in json["data"]:
     gameVersions.fromJson(data["gameVersions"])
-    for version in gameVersions:  
+    for version in gameVersions:
       if getVersionName(version) == addon.gameVersion:
         return data
   addon.setAddonState(Failed, &"JSON Error: No game version matches current verion of {addon.gameVersion}.")
   return
 
-proc userSelectGameVersion(addon: Addon, options: seq[string]): string {.gcsafe.} =
+proc userSelectGameVersion(addon: Addon, options: seq[
+    string]): string {.gcsafe.} =
   let t = addon.config.term
   var selected = 1
   for _ in 0 ..< options.len:
