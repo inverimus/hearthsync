@@ -53,11 +53,11 @@ import files
 proc validProject(project: string, kind: AddonKind): bool =
   case kind
   of Curse, Wowint: return project.all(isDigit)
-  of Tukui: return project == "tukui" or project == "elvui"
-  of Github: return project.split("/").len == 2
-  of Wago: return not project.contains("/")
-  of Gitlab: return project.split("/").len in [2, 3]
-  else: discard
+  of Tukui:         return project == "tukui" or project == "elvui"
+  of Github:        return project.split("/").len == 2
+  of Wago:          return not project.contains("/")
+  of Gitlab:        return project.split("/").len in [2, 3]
+  else:             discard
   return false
 
 proc addonFromUrl(url: string): Option[Addon] =
@@ -74,8 +74,7 @@ proc addonFromUrl(url: string): Option[Addon] =
       discard find(cstring(urlmatch[1]), pattern, m, 0, len(urlmatch[1]))
       if m[0] == "":
         t.write(0, fgRed, styleBright, "Error: ", fgWhite, &"Unable to determine addon from ", fgCyan, url, "\n", resetStyle)
-        t.write(2, fgYellow, "Make sure you have the corret URL. Start a manual download then copy the 'try again' link.\n")
-        t.write(2, fgYellow, "For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page and use lycan -i curse:<ID>\n")
+        t.write(2, fgYellow, &"For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page and use {getAppFilename()} -i curse:<ID>\n")
       else:
         if validProject(m[0], Curse):
           return some(newAddon(m[0], Curse))

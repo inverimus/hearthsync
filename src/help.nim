@@ -1,3 +1,5 @@
+import std/os
+import std/strformat
 import std/terminal
 
 import term
@@ -14,23 +16,23 @@ proc displayHelp*(option: string = "") =
     t.write(2, fgCyan, "-i, --install <args>", "\n\n")
     t.write(2, fgWhite, "Installs an addon from a url, addon short name, or file. Supported sites are github releases, github repositories, gitlab releases, tukui, wowinterface, and curseforge.\n\n")
     t.write(2, fgGreen, "EXAMPLES:", "\n")
-    t.write(4, fgWhite, "hs -i https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
-    t.write(4, fgWhite, "hs -i github:Stanzilla/AdvancedInterfaceOptions", "\n")
-    t.write(4, "hs -i https://github.com/Tercioo/Plater-Nameplates/tree/master", "\n")
-    t.write(4, "hs -i github:Tercioo/Plater-Nameplates@master", "\n")
+    t.write(4, fgWhite, &"{getAppFilename()} -i https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
+    t.write(4, fgWhite, &"{getAppFilename()} -i github:Stanzilla/AdvancedInterfaceOptions", "\n")
+    t.write(4, &"{getAppFilename()} -i https://github.com/Tercioo/Plater-Nameplates/tree/master", "\n")
+    t.write(4, &"{getAppFilename()} -i github:Tercioo/Plater-Nameplates@master", "\n")
     t.write(6, fgYellow, "Including the branch will install and track the latest commit to that branch instead of releases.", "\n")
-    t.write(4, fgWhite, "hs -i https://gitlab.com/woblight/actionmirroringframe", "\n")
-    t.write(4, fgWhite, "hs -i gitlab:woblight/actionmirroringframe", "\n")
-    t.write(4, "hs -i https://www.wowinterface.com/downloads/info24608-HekiliPriorityHelper.html", "\n")
-    t.write(4, "hs -i wowint:24608", "\n")
-    t.write(4, "hs -i https://www.tukui.org/elvui", "\n")
-    t.write(4, "hs -i tukui:elvui", "\n")
-    t.write(4, "hs -i https://www.curseforge.com/api/v1/mods/334372/files/4956577/download", "\n")
-    t.write(4, "hs -i curse:334372", "\n")
+    t.write(4, fgWhite, &"{getAppFilename()} -i https://gitlab.com/woblight/actionmirroringframe", "\n")
+    t.write(4, fgWhite, &"{getAppFilename()} -i gitlab:woblight/actionmirroringframe", "\n")
+    t.write(4, &"{getAppFilename()} -i https://www.wowinterface.com/downloads/info24608-HekiliPriorityHelper.html", "\n")
+    t.write(4, &"{getAppFilename()} -i wowint:24608", "\n")
+    t.write(4, &"{getAppFilename()} -i https://www.tukui.org/elvui", "\n")
+    t.write(4, &"{getAppFilename()} -i tukui:elvui", "\n")
+    t.write(4, &"{getAppFilename()} -i https://www.curseforge.com/api/v1/mods/334372/files/4956577/download", "\n")
+    t.write(4, &"{getAppFilename()} -i curse:334372", "\n")
     t.write(6, fgYellow, "To get this url, go the addon page and click download, then click the download button, then copy the link for 'try again.'", "\n")
     t.write(6, fgYellow, "For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page.", "\n")
-    t.write(4, fgWhite, "hs -i https://addons.wago.io/addons/rarescanner", "\n")
-    t.write(4, fgWhite, "hs -i wago:rarescanner", "\n")
+    t.write(4, fgWhite, &"{getAppFilename()} -i https://addons.wago.io/addons/rarescanner", "\n")
+    t.write(4, fgWhite, &"{getAppFilename()} -i wago:rarescanner", "\n")
 
 
   of "c", "config":
@@ -51,7 +53,7 @@ proc displayHelp*(option: string = "") =
     t.write(6, fgWhite, "Sort by most recent install or update time.\n\n")
 
   else:
-    t.write(2, fgGreen, "HearthSync", fgYellow, " ", version, fgWhite, " by Michael Green\n\n", resetStyle)
+    t.write(2, fgGreen, "Hearthsync", fgYellow, " ", version, fgWhite, " by Michael Green\n\n", resetStyle)
     t.write(2, true, fgCyan, "-a, --add <addon>")
     t.write(30, fgWhite, "Install an addon.", "\n")
     t.write(2, true, fgCyan, "-c, --config [options]")
@@ -70,7 +72,7 @@ proc displayHelp*(option: string = "") =
     t.write(2, true, fgCyan, "-r, --remove <ids>")
     t.write(30, fgWhite, "Remove installed addons by id number", "\n")
     t.write(6, true, fgCyan, "--reinstall")
-    t.write(30, fgWhite, "Force a reinstall of all addons. Can be used to restore from an existing hs_addons.json file.", "\n")
+    t.write(30, fgWhite, "Force a reinstall of all addons. Can be used to restore from an existing hearthsync_addons.json file.", "\n")
     t.write(6, true, fgCyan, "--restore <ids>")
     t.write(30, fgWhite, "Restore addons to the version prior to last update. Backups must be enabled.", "\n")
     t.write(6, true, fgCyan, "--unpin")
