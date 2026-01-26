@@ -14,7 +14,7 @@ proc displayHelp*(option: string = "") =
   of "a", "i", "add", "install":
     t.write(2, fgCyan, "-a, --add <args>", "\n")
     t.write(2, fgCyan, "-i, --install <args>", "\n\n")
-    t.write(2, fgWhite, "Installs an addon from a url, addon short name, or file. Supported sites are, github, gitlab, tukui, wowinterface, curseforge, and wago.io.\n\n")
+    t.write(2, fgWhite, "Installs an addon from a url, addon short name, or file. Supported sites are github, gitlab, tukui, wowinterface, curseforge, and wago.io.\n\n")
     t.write(2, fgGreen, "EXAMPLES:", "\n")
     t.write(4, fgWhite, &"{getAppFilename()} -i https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
     t.write(4, fgWhite, &"{getAppFilename()} -i github:Stanzilla/AdvancedInterfaceOptions", "\n")
@@ -43,7 +43,7 @@ proc displayHelp*(option: string = "") =
     t.write(6, fgWhite, "Replace path with the location of the backup directory. The default is located inside the WoW Interface directory.\n")
     t.write(6, "On or off enables or disables backups respectively.\n")
     t.write(4, fgCyan, "github <token>\n")
-    t.write(6, fgWhite, "Sets a github personal access token. This may be required if you get 403 forbidden responses from github for too may requests.\n")
+    t.write(6, fgWhite, "Sets a github personal access token. This may be required to fix 403 forbidden responses for too may requests.\n")
 
   of "l", "list":
     t.write(2, fgCyan, "-l, --list [options]", "\n\n")
@@ -72,7 +72,7 @@ proc displayHelp*(option: string = "") =
     t.write(2, true, fgCyan, "-r, --remove <ids>")
     t.write(30, fgWhite, "Remove installed addons by id number", "\n")
     t.write(6, true, fgCyan, "--reinstall")
-    t.write(30, fgWhite, "Force a reinstall of all addons. Can be used to restore from an existing hearthsync_addons.json file.", "\n")
+    t.write(30, fgWhite, "Force a reinstall of all addons. Can be used to restore from an existing hearthsync.addons file.", "\n")
     t.write(6, true, fgCyan, "--restore <ids>")
     t.write(30, fgWhite, "Restore addons to the version prior to last update. Backups must be enabled.", "\n")
     t.write(6, true, fgCyan, "--unpin")

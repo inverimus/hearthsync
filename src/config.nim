@@ -79,7 +79,7 @@ proc loadConfig*(): Config =
   result.tempDir = getTempDir() / "hearthsync"
   createDir(result.tempDir)
   result.term = termInit()
-  result.addonJsonFile = getCurrentDir() / "WTF" / "hearthsync_addons.json"
+  result.addonJsonFile = getCurrentDir() / "WTF" / "hearthsync.addons"
   result.installDir = getCurrentDir() / "Interface" / "AddOns"
   
   var configJson: JsonNode
