@@ -2,6 +2,7 @@ import std/enumerate
 import std/sets
 import std/json
 import std/jsonutils
+import std/re
 import std/sequtils
 import std/strformat
 import std/strutils
@@ -10,8 +11,6 @@ import std/terminal
 import types
 import term
 import addonHelp
-
-import std/re
 
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   result = json["fileName"].getStr()
