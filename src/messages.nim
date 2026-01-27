@@ -13,7 +13,6 @@ when not defined(release):
   import logger
   debugLog("messages.nim")
 
-const DARK_GREY: Color = Color(0x20_20_20)
 const LIGHT_GREY: Color = Color(0x34_34_34)
 
 proc stateMessage*(addon: Addon, nameSpace, versionSpace: int, full: bool = false) = 
@@ -25,8 +24,6 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int, full: bool = fals
     t = configData.term
     indent = 1
     even = addon.line mod 2 == 0
-    colors = if even: (fgWhite, DARK_GREY) else: (fgWhite, LIGHT_GREY)
-    style = if not t.trueColor: (if even: styleBright else: styleReverse) else: styleBright
     branch = if addon.branch.isSome: addon.branch.get else: ""
     
     kind = case addon.kind
@@ -43,13 +40,24 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int, full: bool = fals
     of Checking, Parsing, Downloading, Installing, Restoring, FinishedUpToDate, Pinned, FinishedPinned, Unpinned, Renamed, Failed, NoBackup: fgYellow
     of FinishedUpdated, FinishedInstalled, Removed, Restored, List: fgGreen
     else: fgWhite
+    
+  # 1. Position and Clear
+  t.write(if addon.state == List: 1 else: indent, addon.line, true)
+  
+  # 2. Set Row Style
+  if even:
+    t.write((fgWhite, bgDefault), styleBright)
+  else:
+    t.write((fgWhite, LIGHT_GREY), if not t.trueColor: styleReverse else: styleBright)
+  
+  # 3. Addon ID
+  t.write(fgBlue, &"{addon.id:<3}")
 
-  case addon.state
-  of List:
+  # 4. Common and Variant Fields
+  if addon.state == List:
     let pin = if addon.pinned: "!" else: " "
     let time = addon.time.format("MM-dd-yy hh:mm")
-    t.write(1, addon.line, true, colors, style,
-      fgBlue, &"{addon.id:<3}",
+    t.write(
       fgWhite, &"{addon.getName().alignLeft(nameSpace)}",
       fgRed, pin,
       versionColor, &"{addon.getVersion().alignLeft(versionSpace)}",
@@ -58,15 +66,17 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int, full: bool = fals
       fgBlue, if addon.branch.isSome: &"{branch:<11}" else: &"{branch:<12}",
       fgWhite, &"{time:<20}",
       if full: fgBlue else: fgWhite,
-      if full: &"{addon.project:<40}" else: "",
-      resetStyle)
+      if full: &"{addon.project:<40}" else: ""
+    )
   else:
-    t.write(indent, addon.line, true, colors, style,
-      fgBlue, &"{addon.id:<3}", 
+    t.write(
       stateColor, &"{$addon.state:<12}",
       fgWhite, &"{addon.getName().alignLeft(nameSpace)}", 
       versionColor, &"{addon.getVersion().alignLeft(versionSpace)}", 
       fgCyan, &"{kind:<6}", 
       fgWhite, if addon.branch.isSome: "@" else: "", 
-      fgBlue, if addon.branch.isSome: &"{branch:<11}" else: &"{branch:<12}", 
-      resetStyle)
+      fgBlue, if addon.branch.isSome: &"{branch:<11}" else: &"{branch:<12}"
+    )
+  
+  # 5. Reset
+  t.write(resetStyle)
