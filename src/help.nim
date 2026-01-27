@@ -4,11 +4,11 @@ import std/terminal
 
 import term
 
-const 
-  version = "0.1.0"
+const version = "0.1.0"
 
-proc displayHelp*(option: string = "") =
+proc displayHelp*(args: seq[string] = @[]) =
   let t = termInit()
+  let option = if args.len >= 1: args[0] else: ""
   
   case option
   of "a", "i", "add", "install":
