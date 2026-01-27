@@ -9,6 +9,7 @@ const version = "0.1.0"
 proc displayHelp*(args: seq[string] = @[]) =
   let t = termInit()
   let option = if args.len >= 1: args[0] else: ""
+  let appFilename = getAppFilename().lastPathPart()
   
   case option
   of "a", "i", "add", "install":
@@ -16,23 +17,23 @@ proc displayHelp*(args: seq[string] = @[]) =
     t.write(2, fgCyan, "i, install <args>", "\n\n")
     t.write(2, fgWhite, "Installs an addon from a url or project name. Supported sites are github, gitlab, tukui, wowinterface, curseforge, and wago.io.\n\n")
     t.write(2, fgGreen, "EXAMPLES:", "\n")
-    t.write(4, fgWhite, &"{getAppFilename().lastPathPart()} install https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
-    t.write(4, fgWhite, &"{getAppFilename().lastPathPart()} install github:Stanzilla/AdvancedInterfaceOptions", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install https://github.com/Tercioo/Plater-Nameplates/tree/master", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install github:Tercioo/Plater-Nameplates@master", "\n")
+    t.write(4, fgWhite, &"{appFilename} install https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
+    t.write(4, fgWhite, &"{appFilename} install github:Stanzilla/AdvancedInterfaceOptions", "\n")
+    t.write(4, &"{appFilename} install https://github.com/Tercioo/Plater-Nameplates/tree/master", "\n")
+    t.write(4, &"{appFilename} install github:Tercioo/Plater-Nameplates@master", "\n")
     t.write(6, fgGreen, "⬑", fgYellow, "Including the branch will install and track the latest commit to that branch instead of releases.", "\n")
-    t.write(4, fgWhite, &"{getAppFilename().lastPathPart()} install https://gitlab.com/woblight/actionmirroringframe", "\n")
-    t.write(4, fgWhite, &"{getAppFilename().lastPathPart()} install gitlab:woblight/actionmirroringframe", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install https://www.wowinterface.com/downloads/info24608-HekiliPriorityHelper.html", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install wowint:24608", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install https://www.tukui.org/elvui", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install tukui:elvui", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install https://www.curseforge.com/api/v1/mods/334372/files/4956577/download", "\n")
-    t.write(4, &"{getAppFilename().lastPathPart()} install curse:334372", "\n")
+    t.write(4, fgWhite, &"{appFilename} install https://gitlab.com/woblight/actionmirroringframe", "\n")
+    t.write(4, fgWhite, &"{appFilename} install gitlab:woblight/actionmirroringframe", "\n")
+    t.write(4, &"{appFilename} install https://www.wowinterface.com/downloads/info24608-HekiliPriorityHelper.html", "\n")
+    t.write(4, &"{appFilename} install wowint:24608", "\n")
+    t.write(4, &"{appFilename} install https://www.tukui.org/elvui", "\n")
+    t.write(4, &"{appFilename} install tukui:elvui", "\n")
+    t.write(4, &"{appFilename} install https://www.curseforge.com/api/v1/mods/334372/files/4956577/download", "\n")
+    t.write(4, &"{appFilename} install curse:334372", "\n")
     t.write(6, fgGreen, "⬑", fgYellow, "To get this url, go the addon page and click download, then click the download button, then copy the link for 'try again.'", "\n")
     t.write(6, fgYellow, " For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page.", "\n")
-    t.write(4, fgWhite, &"{getAppFilename().lastPathPart()} install https://addons.wago.io/addons/rarescanner", "\n")
-    t.write(4, fgWhite, &"{getAppFilename().lastPathPart()} install wago:rarescanner", "\n")
+    t.write(4, fgWhite, &"{appFilename} install https://addons.wago.io/addons/rarescanner", "\n")
+    t.write(4, fgWhite, &"{appFilename} install wago:rarescanner", "\n")
 
 
   of "c", "config":
