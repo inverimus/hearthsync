@@ -208,7 +208,10 @@ proc update(addon: Addon) {.gcsafe.} =
     addon.unzip()
     addon.createBackup()
     addon.moveDirs()
-    addon.setAddonState(FinishedUpdated)
+    if addon.action == Reinstall:
+      addon.setAddonState(FinishedInstalled)
+    else:
+      addon.setAddonState(FinishedUpdated)
   else:
     addon.setAddonState(FinishedUpToDate)
 
