@@ -9,6 +9,10 @@ import types
 import term
 import addonHelp
 
+when not defined(release):
+  import logger
+  debugLog("gitlab.nim")
+
 proc setDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =
   let sources = json[0]["assets"]["sources"]
   # If gameVersion is empty, choose the shortest zip file

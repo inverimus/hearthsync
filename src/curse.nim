@@ -14,6 +14,7 @@ import addonHelp
 
 when not defined(release):
   import logger
+  debugLog("curse.nim")
 
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   result = json["fileName"].getStr()

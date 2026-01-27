@@ -11,6 +11,7 @@ import term
 
 when not defined(release):
   import logger
+  debugLog("messages.nim")
 
 const DARK_GREY: Color = Color(0x20_20_20)
 const LIGHT_GREY: Color = Color(0x34_34_34)

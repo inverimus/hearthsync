@@ -12,6 +12,7 @@ import addonHelp
 
 when not defined(release):
   import logger
+  debugLog("wago.nim")
 
 proc versionWago*(addon: Addon, json: JsonNode): string {.gcsafe.} =
   for data in json["props"]["releases"]["data"]:
