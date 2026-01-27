@@ -39,7 +39,7 @@ proc addonFromUrl(url: string): Option[Addon] =
       discard find(cstring(urlmatch[1]), pattern, m, 0, len(urlmatch[1]))
       if m[0] == "":
         t.write(0, fgRed, styleBright, "Error: ", fgWhite, &"Unable to determine addon from ", fgCyan, url, "\n", resetStyle)
-        t.write(2, fgYellow, &"For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page and use {getAppFilename()} -i curse:<ID>\n")
+        t.write(2, fgYellow, &"For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page and use {getAppFilename().lastPathPart()} -i curse:<ID>\n")
       else:
         if validProject(m[0], Curse):
           return some(newAddon(m[0], Curse))
@@ -148,7 +148,7 @@ proc renameAddon*(args: seq[string]): Addon =
     id = int16(args[0].parseInt())
   except:
     t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to parse id, instead found {args[0]}\n", resetStyle)
-    t.write(2, fgWhite, &"Usage: {getAppFilename()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
+    t.write(2, fgWhite, &"Usage: {getAppFilename().lastPathPart()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
     quit()
   var opt = addonFromId(id)
   if opt.isSome:
@@ -159,7 +159,7 @@ proc renameAddon*(args: seq[string]): Addon =
       result.overrideName = some(args[1])
     else:
       t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Too many arguments.\n", resetStyle)
-      t.write(2, fgWhite, &"Usage: {getAppFilename()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
+      t.write(2, fgWhite, &"Usage: {getAppFilename().lastPathPart()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
       quit()
     result.action = Name
   else:
