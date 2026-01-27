@@ -29,10 +29,8 @@ https://addons.wago.io/addons/rarescanner
 
 import std/algorithm
 import std/enumerate
-import std/options
 import std/os
 import std/parseopt
-import std/re
 import std/sequtils
 import std/strformat
 import std/strutils
@@ -40,6 +38,7 @@ import std/sugar
 import std/terminal
 import std/times
 
+import action
 import addon
 import addonHelp
 import config
@@ -50,118 +49,13 @@ import logger
 import messages
 import files
 
-proc validProject(project: string, kind: AddonKind): bool =
-  case kind
-  of Curse, Wowint: return project.all(isDigit)
-  of Tukui:         return project == "tukui" or project == "elvui"
-  of Github:        return project.split("/").len == 2
-  of Wago:          return not project.contains("/")
-  of Gitlab:        return project.split("/").len in [2, 3]
-  else:             discard
-  return false
-
-proc addonFromUrl(url: string): Option[Addon] =
-  let t = configData.term
-  var urlmatch: array[2, string]
-  let pattern = re"^(?:https?://)?(?:www\.)?(.+)\.(?:com|org|io)/(.+[^/\n])"
-  let found = find(cstring(url), pattern, urlmatch, 0, len(url))
-  if found == -1 or urlmatch[1] == "":
-    t.write(0, fgRed, styleBright, "Error: ", fgWhite, &"Unable to determine addon from ", fgCyan, url, "\n", resetStyle)
-  case urlmatch[0].toLower()
-    of "curseforge":
-      var m: array[1, string]
-      let pattern = re"\/mods\/(\d+)\/"
-      discard find(cstring(urlmatch[1]), pattern, m, 0, len(urlmatch[1]))
-      if m[0] == "":
-        t.write(0, fgRed, styleBright, "Error: ", fgWhite, &"Unable to determine addon from ", fgCyan, url, "\n", resetStyle)
-        t.write(2, fgYellow, &"For curseforge, using the Project ID is easier. Locate the ID on the right side of the addon page and use {getAppFilename()} -i curse:<ID>\n")
-      else:
-        if validProject(m[0], Curse):
-          return some(newAddon(m[0], Curse))
-    of "github":
-      let p = re"^(.+?/.+?)(?:/|$)(?:tree/)?(.+)?"
-      var m: array[2, string]
-      discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      if validProject(m[0], Github):
-        if m[1] == "":
-          return some(newAddon(m[0], Github))
-        else:
-          return some(newAddon(m[0], GithubRepo, branch = some(m[1])))
-    of "gitlab":
-      if validProject(urlmatch[1], Gitlab):
-        return some(newAddon(urlmatch[1], Gitlab))
-    of "tukui":
-      if validProject(urlmatch[1], Tukui):
-        return some(newAddon(urlmatch[1], Tukui))
-    of "wowinterface":
-      let p = re"^downloads\/info(\d+)-?"
-      var m: array[1, string]
-      discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      if validProject(m[0], Wowint):
-        return some(newAddon(m[0], Wowint))
-    of "addons.wago":
-      let p = re"^addons\/(.+)"
-      var m: array[1, string]
-      discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
-      if validProject(m[0], Wago):
-        return some(newAddon(m[0], Wago))
-    else:
-      discard
-  return none(Addon)
-
-proc addonFromProject(s: string): Option[Addon] =
-  let t = configData.term
-  var match: array[2, string]
-  let pattern = re"^([^:]+):(.*)$"
-  if find(cstring(s), pattern, match, 0, len(s)) == -1:
-    t.write(0, fgRed, styleBright, "Error: ", fgWhite, &"Unable to determine addon from ", fgCyan, s, "\n", resetStyle)
-    return none(Addon)
-  let source = match[0].toLower()
-  let id = match[1].toLower()
-  case source
-  of "curse":
-    if validProject(id, Curse): return some(newAddon(id, Curse))
-  of "wowint":
-    if validProject(id, Wowint): return some(newAddon(id, Wowint))
-  of "tukui":
-    if validProject(id, Tukui): return some(newAddon(id, Tukui))
-  of "gitlab":
-    if validProject(id, Gitlab): return some(newAddon(id, Gitlab))
-  of "wago":
-    if validProject(id, Wago): return some(newAddon(id, Wago))
-  of "github":
-    if validProject(id, Github):
-      var match: array[2, string]
-      let pattern = re"^(.+?)(?:@(.+))?$"
-      discard find(cstring(id), pattern, match, 0, len(id))
-      if match[1] == "":
-        return some(newAddon(id, Github))
-      else:
-        return some(newAddon(match[0], GithubRepo, branch = some(match[1])))
-  else:
-    discard
-  return none(Addon)
-
-proc parseAddon(s: string): Option[Addon] =
-  var match: array[2, string]
-  let pattern = re"^(?:https?:\/\/)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+.*[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?"
-  if find(cstring(s), pattern, match, 0, len(s)) == -1:
-    return addonFromProject(s)
-  else:
-    return addonFromUrl(s)
-
-proc addonFromId(id: int16): Option[Addon] =
-  for a in configData.addons:
-    if a.id == id: return some(a)
-  return none(Addon)
-
 proc changeConfig(args: seq[string]) =
   let t = configData.term
   if len(args) == 0:
     showConfig()
   if len(args) < 2:
     t.write(0, fgRed, styleBright, "Error: ", fgWhite, "Missing argument\n\n", resetStyle)
-    displayHelp("config")
+    displayHelp(@["config"])
   for i in 0 ..< len(args) - 1:
     let item = args[i]
     case item:
@@ -172,7 +66,7 @@ proc changeConfig(args: seq[string]) =
     else:
       t.write(0, fgRed, styleBright, "Error: ", fgWhite, "Unrecognized option ",
           fgCyan, item, "\n", resetStyle)
-      displayHelp("config")
+      displayHelp(@["config"])
   writeConfig(configData)
   quit()
 
@@ -232,6 +126,9 @@ proc parseArgs(): (tuple[action: Action, args: seq[string]]) =
       else: displayHelp()
       return (action, opt.remainingArgs())
 
+
+
+
 proc main() {.inline.} =
   configData = loadConfig()
   logInit(configData.logLevel)
@@ -244,20 +141,17 @@ proc main() {.inline.} =
     ids: seq[int16]
   case action
   of Install:
-    let opt = parseAddon(args[0])
-    if opt.isSome:
-      var addon = opt.get
-      addon.line = line
-      addon.action = Install
-      addons.add(addon)
-      line += 1
-    if addons.len == 0:
+    if args.len == 0:
       t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse any addons to install.\n", resetStyle)
       quit()
+    var addon = parseAddonFromString(args[0])
+    addon.line = line
+    addons.add(addon)
+    line += 1
   of Update, Reinstall:
     for addon in configData.addons:
       addon.line = line
-      addon.action = if action == Reinstall: Reinstall else: Update
+      addon.setAction(action)
       addons.add(addon)
       line += 1
     if addons.len == 0:
@@ -270,41 +164,12 @@ proc main() {.inline.} =
         t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to parse id, instead found {arg}.\n", resetStyle)
         quit()
     for id in ids:
-      var opt = addonFromId(id)
-      if opt.isSome:
-        var addon = opt.get
-        addon.line = line
-        case action
-        of Remove: addon.action = Remove
-        of Restore: addon.action = Restore
-        of Pin: addon.action = Pin
-        of Unpin: addon.action = Unpin
-        else: discard
-        addons.add(addon)
-        line += 1
-  of Name:
-    var id: int16
-    try:
-      id = int16(args[0].parseInt())
-    except:
-      t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to parse id, instead found {args[0]}\n", resetStyle)
-      t.write(2, fgWhite, &"Usage: {getAppFilename()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
-      quit()
-    var opt = addonFromId(id)
-    if opt.isSome:
-      let addon = opt.get
-      if args.len == 1:
-        addon.overrideName = none(string)
-      elif args.len == 2:
-        addon.overrideName = some(args[1])
-      else:
-        t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Too many arguments.\n", resetStyle)
-        t.write(2, fgWhite, &"Usage: {getAppFilename()} -n <id> <new name>  (Leave blank to reset to default)\n", resetStyle)
-        quit()
-      addon.action = Name
+      var addon = parseAddonFromId(id, action)
+      addon.line = line
       addons.add(addon)
-    else:
-      t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to find addon with id: ", fgCyan, $id, "\n", resetStyle)
+      line += 1
+  of Name:
+    addons.add(renameAddon(args))
   of List:
     addons = configData.addons
     if "t" in args or "time" in args:
@@ -313,10 +178,7 @@ proc main() {.inline.} =
   of Setup:
     changeConfig(args)
   of Help:
-    if args.len > 0:
-      displayHelp(args[0])
-    else:
-      displayHelp()
+    displayHelp(args)
 
   addonChannel.open()
   var thr = newSeq[Thread[Addon]](len = addons.len)
