@@ -41,19 +41,13 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int, full: bool = fals
     of FinishedUpdated, FinishedInstalled, Removed, Restored, List: fgGreen
     else: fgWhite
     
-  # 1. Position and Clear
   t.write(if addon.state == List: 1 else: indent, addon.line, true)
-  
-  # 2. Set Row Style
   if even:
     t.write((fgWhite, bgDefault), styleBright)
   else:
     t.write((fgWhite, LIGHT_GREY), if not t.trueColor: styleReverse else: styleBright)
-  
-  # 3. Addon ID
   t.write(fgBlue, &"{addon.id:<3}")
 
-  # 4. Common and Variant Fields
   if addon.state == List:
     let pin = if addon.pinned: "!" else: " "
     let time = addon.time.format("MM-dd-yy hh:mm")
