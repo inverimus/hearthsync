@@ -107,9 +107,12 @@ proc setBackup*(arg: string) =
   case arg.toLower()
   of "y", "yes", "on", "enable", "enabled", "true":
     configData.backupEnabled = true
+    t.write(2, fgWhite, "Backup enabled\n", resetStyle)
+    t.write(2, fgWhite, "Backup directory: ", fgCyan, configData.backupDir, "\n", resetStyle)
     log(&"Backup enabled", Info)
   of "n", "no", "off", "disable", "disabled", "false":
     configData.backupEnabled = false
+    t.write(2, fgWhite, "Backup disabled\n", resetStyle)
     log(&"Backup disabled", Info)
   else:
     let dir = arg.strip(chars = {'\'', '"'}).normalizePathEnd()
