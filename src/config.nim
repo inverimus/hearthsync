@@ -170,7 +170,7 @@ proc setLogLevel*(arg: string) =
 proc setPath*(args: seq[string]) =
   let path = args[^1].strip(chars = {'\'', '"'}).normalizePathEnd()
   if not dirExists(path):
-    stdout.write("Error: Path provided does not exist:\n  ",path, "\n")
+    stdout.write("Error: Path provided does not exist: ",path, "\n")
     quit(1)
   configData = Config()
   configData.logLevel = Debug
