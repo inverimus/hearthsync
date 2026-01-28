@@ -12,3 +12,4 @@ namedBin      = {"hearthsync":"hs"}.toTable
 
 requires "nim >= 2.2.6"
 requires "zippy >= 0.10.6"
+requires "htmlparser"

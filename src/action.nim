@@ -20,11 +20,11 @@ proc validProject(project: string, kind: AddonKind): bool =
   of Curse, Wowint: return project.all(isDigit)
   of Tukui:         return project == "tukui" or project == "elvui"
   of Github:        return project.split("/").len == 2
+  of GithubRepo:    return true #TODO
   of Wago:          return not project.contains("/")
   of Gitlab:        return project.split("/").len in [2, 3]
-  else:             discard
-  return false
-
+  of Zremax:        return not project.contains("/") #TODO
+ 
 proc addonFromUrl(url: string): Option[Addon] =
   let t = configData.term
   var urlmatch: array[2, string]
@@ -70,6 +70,12 @@ proc addonFromUrl(url: string): Option[Addon] =
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
       if validProject(m[0], Wago):
         return some(newAddon(m[0], Wago))
+    of "zremax":
+      let p = re"^wow\/addons\/(.+)"
+      var m: array[1, string]
+      discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
+      if validProject(m[0], Zremax):
+        return some(newAddon(m[0], Zremax))
     else:
       discard
   return none(Addon)
@@ -127,7 +133,7 @@ proc parseAddonFromString*(arg: string): Addon =
     result.action = Install
   else:
     configData.term.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse addon from arg: ", fgCyan, arg, "\n", resetStyle)
-    quit()
+    quit(1)
 
 proc parseAddonFromId*(id: int16, action: Action): Addon =
   let option = addonFromId(id)
@@ -136,7 +142,7 @@ proc parseAddonFromId*(id: int16, action: Action): Addon =
     result.action = action
   else:
     configData.term.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse addon from id: ", fgCyan, $id, "\n", resetStyle)
-    quit()
+    quit(1)
 
 proc setAction*(addon: Addon, action: Action) =
   addon.action = action

@@ -23,6 +23,11 @@ import gitlab
 import curse
 import wago
 
+when not defined(release):
+  import logger
+  debugLog("action.nim")
+
+
 proc `==`*(a, b: Addon): bool {.inline.} =
   a.project.toLower() == b.project.toLower()
 
@@ -56,7 +61,7 @@ proc toJsonHook*(a: Addon): JsonNode =
   result["dirs"] = %a.dirs
   result["time"] = %a.time.format("yyyy-MM-dd'T'HH:mm")
 
-proc setName(addon: Addon, json: JsonNode, name: string = "none") {.gcsafe.} =
+proc setName(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
   case addon.kind
   of Curse:  addon.name = addon.nameCurse(json)
@@ -65,6 +70,7 @@ proc setName(addon: Addon, json: JsonNode, name: string = "none") {.gcsafe.} =
   of Tukui:  addon.name = json["name"].getStr()
   of Wowint: addon.name = json["UIName"].getStr()
   of Wago:   addon.name = json["props"]["addon"]["display_name"].getStr()
+  of Zremax: addon.name = json["name"].getStr()
 
 proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
@@ -86,6 +92,8 @@ proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.version = json["UIVersion"].getStr()
   of Wago:
     addon.version = addon.versionWago(json)
+  of Zremax:
+    addon.version = json["version"].getStr()
 
 proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
@@ -114,6 +122,8 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
       addon.chooseDownloadUrlWago(json)
     else:
       addon.setDownloadUrlWago(json)
+  of Zremax:
+    discard #TODO
 
 proc getLatest(addon: Addon): Response {.gcsafe.} =
   if addon.state == Failed: return
@@ -151,11 +161,36 @@ proc getLatest(addon: Addon): Response {.gcsafe.} =
     retryCount += 1
     sleep(100)
 
+import pkg/htmlparser
+import std/xmltree
+
 proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   var json: JsonNode
   let response = addon.getLatest()
   if addon.state == Failed: return
   case addon.kind
+  of Zremax:
+    json = newJObject()
+    let xml = parseHtml(response.body)
+    for node in xml.findAll("div"):
+      let class = node.attr("class")
+      if class == "view-addon_info_header_title_name":
+        let name = node.child("h1").innerText()
+        json["name"] = %name
+
+    var expansions: seq[string]
+    for node in xml.findAll("span"):
+      let class = node.attr("class")
+      if class == "view-addon_info_header_title_expansions_expansion":
+        expansions.add(node.innerText())
+    json["expansions"] = %expansions
+      
+
+    debugLog(&"JSON: {json}")
+    quit(0)
+
+
+
   of Wago:
     let pattern = re("""data-page="({.+?})"""")
     var matches: array[1, string]
