@@ -22,10 +22,11 @@ import github
 import gitlab
 import curse
 import wago
+import zremax
 
 when not defined(release):
   import logger
-  debugLog("action.nim")
+  debugLog("addon.nim")
 
 
 proc `==`*(a, b: Addon): bool {.inline.} =
@@ -123,7 +124,9 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
     else:
       addon.setDownloadUrlWago(json)
   of Zremax:
-    discard #TODO
+    if addon.action == Install:
+      addon.chooseDownloadUrlZremax(json)
+    addon.downloadUrl = &"https://zremaxcom.s3.eu-north-1.amazonaws.com/addons/addons/{addon.project}-{addon.gameVersion}.zip"
 
 proc getLatest(addon: Addon): Response {.gcsafe.} =
   if addon.state == Failed: return
@@ -161,36 +164,13 @@ proc getLatest(addon: Addon): Response {.gcsafe.} =
     retryCount += 1
     sleep(100)
 
-import pkg/htmlparser
-import std/xmltree
-
 proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   var json: JsonNode
   let response = addon.getLatest()
   if addon.state == Failed: return
   case addon.kind
   of Zremax:
-    json = newJObject()
-    let xml = parseHtml(response.body)
-    for node in xml.findAll("div"):
-      let class = node.attr("class")
-      if class == "view-addon_info_header_title_name":
-        let name = node.child("h1").innerText()
-        json["name"] = %name
-
-    var expansions: seq[string]
-    for node in xml.findAll("span"):
-      let class = node.attr("class")
-      if class == "view-addon_info_header_title_expansions_expansion":
-        expansions.add(node.innerText())
-    json["expansions"] = %expansions
-      
-
-    debugLog(&"JSON: {json}")
-    quit(0)
-
-
-
+    json = addon.extractJsonZremax(response)
   of Wago:
     let pattern = re("""data-page="({.+?})"""")
     var matches: array[1, string]
