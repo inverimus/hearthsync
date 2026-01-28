@@ -13,8 +13,8 @@ proc displayHelp*(args: seq[string] = @[]) =
   
   case option
   of "a", "i", "add", "install":
-    t.write(2, fgCyan, "a, add <args>", "\n")
-    t.write(2, fgCyan, "i, install <args>", "\n\n")
+    t.write(2, fgCyan, "a, add <arg>", "\n")
+    t.write(2, fgCyan, "i, install <arg>", "\n\n")
     t.write(2, fgWhite, "Installs an addon from a url or project name. Supported sites are github, gitlab, tukui, wowinterface, curseforge, and wago.io.\n\n")
     t.write(2, fgGreen, "EXAMPLES:", "\n")
     t.write(4, fgWhite, &"{appFilename} install https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
