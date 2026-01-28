@@ -1,19 +1,19 @@
 #[
-    HearthSync - A very simple World of Warcraft addon manager
-    Copyright (C) 2026 Michael Green
+HearthSync - A very simple World of Warcraft addon manager
+Copyright (C) 2026 Michael Green
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]#
 
 import std/algorithm
@@ -101,18 +101,19 @@ proc parseArgs(): (tuple[action: Action, args: seq[string]]) =
       displayHelp()
     of cmdArgument:
       case key:
-      of "a", "i", "add", "install": action = Install
-      of "u", "update": action = Update
-      of "r", "remove": action = Remove
-      of "n", "name": action = Name
-      of "l", "list": action = List
-      of "c", "config": action = Setup
-      of "h", "help": action = Help
-      of "reinstall": action = Reinstall
-      of "pin": action = Pin
-      of "unpin": action = Unpin
-      of "restore": action = Restore
-      else: displayHelp()
+      of "a", "add":     action = Install
+      of "i", "install": action = Install
+      of "u", "update":  action = Update
+      of "r", "remove":  action = Remove
+      of "n", "name":    action = Name
+      of "l", "list":    action = List
+      of "c", "config":  action = Setup
+      of "h", "help":    action = Help
+      of "reinstall":    action = Reinstall
+      of "pin":          action = Pin
+      of "unpin":        action = Unpin
+      of "restore":      action = Restore
+      else:              displayHelp()
       return (action, opt.remainingArgs())
 
 
