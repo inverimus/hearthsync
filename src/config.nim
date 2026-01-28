@@ -168,9 +168,10 @@ proc setLogLevel*(arg: string) =
   configData.logLevel = newLevel
 
 proc setPath*(args: seq[string]) =
+  let t = termInit()
   let path = args[^1].strip(chars = {'\'', '"'}).normalizePathEnd()
   if not dirExists(path):
-    stdout.write("Error: Path provided does not exist: ",path, "\n")
+    t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Path provided does not exist:\n  ", fgCyan, path, "\n", resetStyle)
     quit(1)
   configData = Config()
   configData.logLevel = Debug
@@ -182,6 +183,5 @@ proc setPath*(args: seq[string]) =
   configData.githubToken = ""
   configData.addons = @[]
   writeConfig(configData)
-  configData = loadConfig()
-  configData.term.write(0, fgWhite, "Config set. WoW found at: ", fgCyan, path, "\n", resetStyle)
+  t.write(0, fgWhite, "Config set. WoW found at: ", fgCyan, path, "\n", resetStyle)
   quit(0)
