@@ -1,13 +1,12 @@
-import std/enumerate
 import std/json
+import std/sequtils
 import std/strformat
 import std/strutils
 import std/sugar
-import std/terminal
 
 import types
-import term
 import addonHelp
+import select
 
 when not defined(release):
   import logger
@@ -39,25 +38,6 @@ proc setDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =
   if not addon.gameVersion.isEmptyOrWhitespace:
     addon.setAddonState(Failed, &"No zip file matching: {addon.gameVersion}. Try reinstalling as file names might have changed.")
 
-proc userSelectDownloadGitlab(addon: Addon, options: seq[string]): int {.gcsafe.} =
-  let t = addon.config.term
-  var selected = 1
-  for _ in 0 ..< options.len:
-    t.addLine()
-  while true:
-    for (i, option) in enumerate(options):
-      let name = option.rsplit("/", maxsplit=1)[1]
-      if selected == i + 1:
-        t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {name}", resetStyle)
-      else:
-        t.write(16, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {name}", resetStyle)
-    let newSelected = handleSelection(options.len, selected)
-    if newSelected == selected:
-      t.clear(addon.line .. addon.line + options.len)
-      return selected - 1
-    elif newSelected != -1:
-      selected = newSelected
-
 proc chooseDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
   var options: seq[string]
@@ -72,6 +52,6 @@ proc chooseDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.downloadUrl = options[0]
     return
   else:
-    let i = addon.userSelectDownloadGitlab(options)
+    let i = addon.userSelect(options.mapIt(it.rsplit("/")[^1]))
     addon.gameVersion = extractVersionFromDifferences(options, i)
     addon.downloadUrl = options[i]

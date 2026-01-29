@@ -1,14 +1,11 @@
-import std/enumerate
-import std/sets
 import std/json
 import std/sequtils
 import std/strutils
 import std/strformat
-import std/terminal
 
 import types
-import term
 import addonHelp
+import select
 
 when not defined(release):
   import logger
@@ -39,34 +36,15 @@ proc getVersionName(version: string): string =
   of "mop":     result = "MoP Classic"
   else:         result = "Unknown"
 
-proc userSelectGameVersion(addon: Addon, options: seq[string]): string {.gcsafe.} =
-  let t = addon.config.term
-  var selected = 1
-  for _ in 0 ..< options.len:
-    t.addLine()
-  while true:
-    for (i, option) in enumerate(options):
-      let versionName = getVersionName(option)
-      if selected == i + 1:
-        t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {versionName}", resetStyle)
-      else:
-        t.write(16, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {versionName}", resetStyle)
-    let newSelected = handleSelection(options.len, selected)
-    if newSelected == selected:
-      t.clear(addon.line .. addon.line + options.len)
-      return options[selected - 1]
-    elif newSelected != -1:
-      selected = newSelected
-
 proc chooseDownloadUrlWago*(addon: Addon, json: JsonNode) {.gcsafe.} =
-  var gameVersions: OrderedSet[string]
+  var gameVersions: seq[string]
   for data in json["props"]["releases"]["data"]:
     let patches = ["retail", "mop", "classic", "bc", "wotlk", "cata"]
     for patch in patches:
       if data["supported_" & patch & "_patches"].len > 0:
-        gameVersions.incl(patch)
+        gameVersions.addUnique(patch)
   if gameVersions.len == 1:
-    addon.gameVersion = gameVersions.toSeq()[0]
+    addon.gameVersion = gameVersions[0]
   else:
-    addon.gameVersion = addon.userSelectGameVersion(gameVersions.toSeq())
+    addon.gameVersion = gameVersions[addon.userSelect(gameVersions.mapIt(getVersionName(it)))]
   setDownloadUrlWago(addon, json)

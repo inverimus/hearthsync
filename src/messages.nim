@@ -72,5 +72,4 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int, full: bool = fals
       fgBlue, if addon.branch.isSome: &"{branch:<11}" else: &"{branch:<12}"
     )
   
-  # 5. Reset
   t.write(resetStyle)

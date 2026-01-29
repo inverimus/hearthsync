@@ -5,12 +5,11 @@ import std/options
 import std/strformat
 import std/strutils
 import std/sugar
-import std/terminal
 
 import types
-import term
 import logger
 import addonHelp
+import select
 
 proc fallbackToGithubRepo*(addon: Addon, client: HttpClient, response: Response) {.gcsafe.} =
   log(&"{addon.getName()}: Got {response.status}: {addon.getLatestUrl()} - This usually means no releases are available so trying main/master branch", Warning)
@@ -63,24 +62,6 @@ proc setDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
   if not addon.gameVersion.isEmptyOrWhitespace:
     addon.setAddonState(Failed, &"No zip file matching: {addon.gameVersion}. Try reinstalling as file names might have changed.")
         
-proc userSelectDownloadGithub(addon: Addon, options: seq[string]): int {.gcsafe.} =
-  let t = addon.config.term
-  var selected = 1
-  for _ in 0 ..< options.len:
-    t.addLine()
-  while true:
-    for (i, option) in enumerate(options):
-      if selected == i + 1:
-        t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
-      else:
-        t.write(16, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
-    let newSelected = handleSelection(options.len, selected)
-    if newSelected == selected:
-      t.clear(addon.line .. addon.line + options.len)
-      return selected - 1
-    elif newSelected != -1:
-      selected = newSelected
-
 proc chooseDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
   let assets = json["assets"]
@@ -97,6 +78,6 @@ proc chooseDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.downloadUrl = assets[0]["browser_download_url"].getStr()
     return
   else:
-    let i = addon.userSelectDownloadGithub(options)
+    let i = addon.userSelect(options)
     addon.gameVersion = extractVersionFromDifferences(options, i)
     addon.downloadUrl = assets[i]["browser_download_url"].getStr()
