@@ -15,7 +15,7 @@ proc displayHelp*(args: seq[string] = @[]) =
   of "a", "i", "add", "install":
     t.write(2, fgCyan, "a, add <arg>", "\n")
     t.write(2, fgCyan, "i, install <arg>", "\n\n")
-    t.write(2, fgWhite, "Installs an addon from a url or project name. Supported sites are github, gitlab, tukui, wowinterface, curseforge, and wago.io.\n\n")
+    t.write(2, fgWhite, "Installs an addon from a url or project name. Supported sites are github, gitlab, tukui, wowinterface, curseforge, wago.io, and zremax.\n\n")
     t.write(2, fgGreen, "EXAMPLES:", "\n")
     t.write(3, fgBlue, "Github:", "\n")
     t.write(4, fgWhite, &"{appFilename} install https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
@@ -40,6 +40,9 @@ proc displayHelp*(args: seq[string] = @[]) =
     t.write(3, fgBlue, "Wago.io:", "\n")
     t.write(4, fgWhite, &"{appFilename} install https://addons.wago.io/addons/rarescanner", "\n")
     t.write(4, fgWhite, &"{appFilename} install wago:rarescanner", "\n")
+    t.write(3, fgBlue, "Zremax:", "\n")
+    t.write(4, fgWhite, &"{appFilename} install https://zremax.com/wow/addons/gearscorelite", "\n")
+    t.write(4, &"{appFilename} install zremax:gearscorelite", "\n")
 
 
   of "c", "config":

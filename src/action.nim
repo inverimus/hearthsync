@@ -99,6 +99,8 @@ proc addonFromProject(s: string): Option[Addon] =
     if validProject(id, Gitlab): return some(newAddon(id, Gitlab))
   of "wago":
     if validProject(id, Wago):   return some(newAddon(id, Wago))
+  of "zremax:": 
+    if validProject(id, Zremax): return some(newAddon(id, Zremax))
   of "github":
     if validProject(id, Github):
       var match: array[2, string]
