@@ -49,7 +49,6 @@ proc chooseDownloadUrlWago*(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.gameVersion = gameVersions[0]
   else:
     addon.gameVersion = gameVersions[addon.userSelect(gameVersions.mapIt(getVersionName(it)))]
-  setDownloadUrlWago(addon, json)
 
 proc extractJsonWago*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
   let pattern = re("""data-page="({.+?})"""")

@@ -119,8 +119,7 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
   of Wago:
     if addon.action == Install:
       addon.chooseDownloadUrlWago(json)
-    else:
-      addon.setDownloadUrlWago(json)
+    addon.setDownloadUrlWago(json)
   of Zremax:
     if addon.action == Install:
       addon.chooseDownloadUrlZremax(json)
