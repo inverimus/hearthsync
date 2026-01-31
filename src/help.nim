@@ -15,7 +15,7 @@ proc displayHelp*(args: seq[string] = @[]) =
   of "a", "i", "add", "install":
     t.write(2, fgCyan, "a, add <arg>", "\n")
     t.write(2, fgCyan, "i, install <arg>", "\n\n")
-    t.write(2, fgWhite, "Installs an addon from a url or project name. Supported sites are github, gitlab, tukui, wowinterface, curseforge, wago.io, and zremax.\n\n")
+    t.write(2, fgWhite, "Installs an addon from a url or project name. Supported sites are github, gitlab, tukui, wowinterface, curseforge, wago.io, zremax, and legacy-wow.\n\n")
     t.write(2, fgGreen, "EXAMPLES:", "\n")
     t.write(3, fgBlue, "Github:", "\n")
     t.write(4, fgWhite, &"{appFilename} install https://github.com/Stanzilla/AdvancedInterfaceOptions", "\n")
@@ -43,8 +43,10 @@ proc displayHelp*(args: seq[string] = @[]) =
     t.write(3, fgBlue, "Zremax:", "\n")
     t.write(4, fgWhite, &"{appFilename} install https://zremax.com/wow/addons/gearscorelite", "\n")
     t.write(4, &"{appFilename} install zremax:gearscorelite", "\n")
-
-
+    t.write(3, fgBlue, "Legacy-wow:", "\n")
+    t.write(4, fgWhite, &"{appFilename} install https://legacy-wow.com/cata-addons/recount/", "\n")
+    t.write(4, &"{appFilename} install legacy-wow:recount", "\n")
+    
   of "c", "config":
     t.write(2, fgCyan, "c, config [options]", "\n\n")
     t.write(2, fgWhite, "Sets various configuration options. If no options are provided, displays the current configuration.\n\n")
