@@ -45,7 +45,7 @@ proc displayHelp*(args: seq[string] = @[]) =
     t.write(4, &"{appFilename} install zremax:gearscorelite", "\n")
     t.write(3, fgBlue, "Legacy-wow:", "\n")
     t.write(4, fgWhite, &"{appFilename} install https://legacy-wow.com/cata-addons/recount/", "\n")
-    t.write(4, &"{appFilename} install legacy-wow:recount", "\n")
+    t.write(4, &"{appFilename} install legacy-wow:cata-addons/recount", "\n")
     
   of "c", "config":
     t.write(2, fgCyan, "c, config [options]", "\n\n")
