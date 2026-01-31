@@ -9,7 +9,7 @@ import types
 import logger
 
 proc getVersion*(addon: Addon): string =
-  if addon.version.isEmptyOrWhitespace and addon.startVersion.isEmptyOrWhitespace: 
+  if addon.version.isEmptyOrWhitespace and addon.startVersion.isEmptyOrWhitespace:
     return ""
   case addon.kind
   of GithubRepo: 
@@ -18,8 +18,8 @@ proc getVersion*(addon: Addon): string =
     return addon.version[0 ..< 7]
   else:
     if addon.version.isEmptyOrWhitespace: 
-      return addon.startVersion
-    return addon.version
+      return addon.startVersion.replace(addon.name, "").strip(chars = {' ', '_', '-', '.'})
+    return addon.version.replace(addon.name, "").strip(chars = {' ', '_', '-', '.'})
 
 proc getName*(addon: Addon): string =
   if addon.overrideName.isSome: 
