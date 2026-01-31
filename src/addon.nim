@@ -1,4 +1,3 @@
-import std/enumerate
 import std/httpclient
 import std/json
 import std/options
@@ -7,13 +6,10 @@ import std/sequtils
 import std/strformat
 import std/strutils
 import std/sugar
-import std/terminal
 import std/times
 
 import config
 import types
-import term
-import messages
 import addonHelp
 import files
 

@@ -1,4 +1,3 @@
-import std/enumerate
 import std/httpclient
 import std/json
 import std/options
@@ -40,7 +39,7 @@ proc setDownloadUrlGithub*(addon: Addon, json: JsonNode) {.gcsafe.} =
   # If gameVersion is empty, choose the shortest zip file
   if addon.gameVersion.isEmptyOrWhitespace:
     let names = collect(
-      for (i, asset) in enumerate(assets):
+      for i, asset in assets:
         if asset["content_type"].getStr() == "application/zip":
           (i, asset["name"].getStr())
     )

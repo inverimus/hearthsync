@@ -1,4 +1,3 @@
-import std/enumerate
 import std/strformat
 import std/terminal
 
@@ -11,7 +10,7 @@ proc userSelect*(addon: Addon, options: seq[string]): int {.gcsafe.} =
   for _ in 0 ..< options.len:
     t.addLine()
   while true:
-    for (i, option) in enumerate(options):
+    for i, option in options:
       if selected == i + 1:
         t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
       else:

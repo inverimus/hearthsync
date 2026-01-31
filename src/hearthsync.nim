@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]#
 
 import std/algorithm
-import std/enumerate
 import std/os
 import std/parseopt
 import std/sequtils
@@ -178,14 +177,12 @@ proc main() {.inline.} =
   of Help:
     displayHelp(args)
 
-  log(&"Processing {addons.len} addons")
   for i, addon in addons:
     addon.line = i
-    log(&"{addon.id} {addon.name} {addon.version} {addon.line}")
 
   addonChannel.open()
   var thr = newSeq[Thread[Addon]](len = addons.len)
-  for i, addon in enumerate(addons):
+  for i, addon in addons:
     addon.config = addr configData
     createThread(thr[i], workQueue, addon)
 
