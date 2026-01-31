@@ -13,12 +13,12 @@ import types
 import addonHelp
 import files
 
-import github
-import gitlab
-import curse
-import wago
-import zremax
-import legacy
+import providers/github
+import providers/gitlab
+import providers/curse
+import providers/wago
+import providers/zremax
+import providers/legacy
 
 when not defined(release):
   import logger

@@ -5,12 +5,12 @@ import std/sequtils
 import std/strutils
 import std/strformat
 
-import types
-import addonHelp
-import select
+import ../types
+import ../addonHelp
+import ../select
 
 when not defined(release):
-  import logger
+  import ../logger
   debugLog("wago.nim")
 
 proc versionWago*(addon: Addon, json: JsonNode): string {.gcsafe.} =

@@ -4,12 +4,12 @@ import std/strformat
 import std/strutils
 import std/sugar
 
-import types
-import addonHelp
-import select
+import ../types
+import ../addonHelp
+import ../select
 
 when not defined(release):
-  import logger
+  import ../logger
   debugLog("gitlab.nim")
 
 proc setDownloadUrlGitlab*(addon: Addon, json: JsonNode) {.gcsafe.} =

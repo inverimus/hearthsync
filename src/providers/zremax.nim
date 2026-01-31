@@ -7,11 +7,11 @@ import std/xmltree
 
 import pkg/htmlparser
 
-import types
-import select
+import ../types
+import ../select
 
 when not defined(release):
-  import logger
+  import ../logger
   debugLog("zremax.nim")
 
 proc extractJsonZremax*(response: Response): JsonNode {.gcsafe.} =

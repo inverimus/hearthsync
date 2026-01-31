@@ -5,10 +5,10 @@ import std/strformat
 import std/strutils
 import std/sugar
 
-import types
-import logger
-import addonHelp
-import select
+import ../types
+import ../logger
+import ../addonHelp
+import ../select
 
 proc fallbackToGithubRepo*(addon: Addon, client: HttpClient, response: Response) {.gcsafe.} =
   log(&"{addon.getName()}: Got {response.status}: {addon.getLatestUrl()} - This usually means no releases are available so trying main/master branch", Warning)

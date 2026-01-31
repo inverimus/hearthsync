@@ -4,12 +4,12 @@ import std/sequtils
 import std/strformat
 import std/strutils
 
-import types
-import addonHelp
-import select
+import ../types
+import ../addonHelp
+import ../select
 
 when not defined(release):
-  import logger
+  import ../logger
   debugLog("curse.nim")
 
 proc nameCurse*(addon: Addon, json: JsonNode): string {.gcsafe.} =
