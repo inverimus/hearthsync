@@ -211,6 +211,7 @@ proc main() {.inline.} =
   case action
   of Install:
     assignIds(success & configData.addons)
+    # TODO we only allow one install at a time now so this can be simplified
     success.apply((a: Addon) => t.write(1, a.line, fgBlue, &"{a.id:<3}", resetStyle))
     t.addLine()
   else:
