@@ -112,7 +112,7 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
       addon.chooseDownloadUrlGitlab(json)
     else:
       addon.setDownloadUrlGitlab(json)
-  of Tukui:
+  of Tukui, Legacy:
     addon.downloadUrl = json["url"].getStr()
   of Wowint:
     addon.downloadUrl = json["UIDownload"].getStr()
@@ -124,8 +124,6 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
     if addon.action == Install:
       addon.chooseDownloadUrlZremax(json)
     addon.downloadUrl = &"https://zremaxcom.s3.eu-north-1.amazonaws.com/addons/addons/{addon.project}-{addon.gameVersion}.zip"
-  of Legacy:
-    addon.downloadUrl = json["downloadUrl"].getStr()
 
 proc getLatest(addon: Addon): Response {.gcsafe.} =
   if addon.state == Failed: return

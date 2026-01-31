@@ -23,7 +23,7 @@ proc extractJsonLegacy*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
       var m: array[1, string]
       if find(cstring(onclick), p, m, 0, len(onclick)) != -1:
         let download = m[0].replace(" ", "%20")
-        result["downloadUrl"] = %download
+        result["url"] = %download
         break
   
   for h1 in html.findAll("h1"):
@@ -31,5 +31,5 @@ proc extractJsonLegacy*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
       result["name"] = %h1.innerText()
       break
   
-  if not result.hasKey("name") or not result.hasKey("downloadUrl"):
+  if not result.hasKey("name") or not result.hasKey("url"):
     addon.setAddonState(Failed, "Unable to extract information from HTML")
