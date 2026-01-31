@@ -250,6 +250,10 @@ proc uninstall(addon: Addon) =
   addon.removeAddonFiles(removeBackups = true)
   addon.setAddonState(Removed)
 
+proc list(addon: Addon) =
+  addon.setAddonState(Listed)
+  addon.setAddonState(Done)
+
 proc pin(addon: Addon) =
   addon.pinned = true
   addon.setAddonState(Pinned)
@@ -257,25 +261,6 @@ proc pin(addon: Addon) =
 proc unpin(addon: Addon) =
   addon.pinned = false
   addon.setAddonState(Unpinned)
-
-proc list*(addons: seq[Addon], args: seq[string] = @[]) =
-  let t = configData.term
-  if addons.len == 0:
-    t.write(2, fgWhite, "No addons installed\n", resetStyle)
-    quit()
-  for line, addon in enumerate(addons):
-    addon.state = List
-    addon.line = line
-  let 
-    nameSpace = addons[addons.mapIt(it.getName().len).maxIndex()].getName().len + 2
-    versionSpace = addons[addons.mapIt(it.getVersion().len).maxIndex()].getVersion().len + 2
-  var full: bool = false
-  if args.len > 0:
-    full = args[0] == "all" or args[0] == "a"
-  for addon in addons:
-    addon.stateMessage(nameSpace, versionSpace, full)
-  t.addLine()
-  quit()
 
 proc restore*(addon: Addon) =
   addon.setAddonState(Restoring)
@@ -304,6 +289,8 @@ proc workQueue*(addon: Addon) {.thread.} =
   of Pin:       addon.pin()
   of Unpin:     addon.unpin()
   of Restore:   addon.restore()
+  of List:      addon.list()
+  of ListAll:   addon.list()
   of Name:      addon.setAddonState(Renamed)
   else: discard
   addon.state = if addon.state == Failed: DoneFailed else: Done

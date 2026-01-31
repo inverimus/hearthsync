@@ -5,7 +5,7 @@ const POLLRATE* = 20
 
 type
   Action* = enum
-    Install, Update, Remove, List, Pin, Unpin, Restore, Setup, Help, Name, Reinstall, Revert
+    Install, Update, Remove, List, ListAll, Pin, Unpin, Restore, Setup, Help, Name, Reinstall, Revert
 
   LogLevel* = enum
     Off = "OFF",
@@ -33,7 +33,7 @@ type
     Renamed = "Renamed"
     Done = "Done"
     DoneFailed = "Failed"
-    List = "List"
+    Listed = "Listed"
   
   AddonKind* = enum
     Github, GithubRepo, Gitlab, Tukui, Wowint, Curse, Wago, Zremax, Legacy

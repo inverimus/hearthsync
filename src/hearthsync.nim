@@ -130,7 +130,6 @@ proc main() {.inline.} =
   let t = configData.term
   var
     addons: seq[Addon]
-    line = 0
     ids: seq[int16]
   case action
   of Install:
@@ -138,22 +137,15 @@ proc main() {.inline.} =
       t.write(2, fgRed, styleBright, "Error: ", fgWhite, "Unable to parse any addons to install.\n", resetStyle)
       quit()
     var addon = parseAddonFromString(args[0])
-    addon.line = line
     addons.add(addon)
-    line += 1
   of Update, Reinstall:
     for addon in configData.addons:
-      addon.line = line
       addon.setAction(action)
       addons.add(addon)
-      line += 1
     if addons.len == 0:
       displayHelp()
   of Revert:
     addons = getRecentlyUpdatedAddons()
-    for addon in addons:
-      addon.line = line
-      line += 1
     if addons.len == 0:
       displayHelp()
   of Remove, Restore, Pin, Unpin:
@@ -168,20 +160,28 @@ proc main() {.inline.} =
         quit()
     for id in ids:
       var addon = parseAddonFromId(id, action)
-      addon.line = line
       addons.add(addon)
-      line += 1
   of Name:
     addons.add(renameAddon(args))
-  of List:
+  of List, ListAll:
     addons = configData.addons
+    if addons.len == 0:
+      t.write(2, fgWhite, "No addons installed\n", resetStyle)
+      quit()
     if "t" in args or "time" in args:
       addons.sort((a, z) => int(a.time < z.time))
-    addons.list(args)
+    let listAll = "a" in args or "all" in args
+    for addon in addons:
+      addon.setAction(if listAll: ListAll else: List)
   of Setup:
     changeConfig(args)
   of Help:
     displayHelp(args)
+
+  log(&"Processing {addons.len} addons")
+  for i, addon in addons:
+    addon.line = i
+    log(&"{addon.id} {addon.name} {addon.version} {addon.line}")
 
   addonChannel.open()
   var thr = newSeq[Thread[Addon]](len = addons.len)
@@ -203,6 +203,10 @@ proc main() {.inline.} =
   processLog()
   processed &= processMessages()
   thr.joinThreads()
+
+  if action == List:
+    t.addLine()
+    quit(0)
 
   failed = processed.filterIt(it.state == DoneFailed)
   success = processed.filterIt(it.state == Done)
