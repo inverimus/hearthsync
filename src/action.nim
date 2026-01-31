@@ -5,6 +5,7 @@ import std/sequtils
 import std/strformat
 import std/strutils
 import std/terminal
+import std/times
 
 import addon
 import config
@@ -176,3 +177,10 @@ proc renameAddon*(args: seq[string]): Addon =
     result.action = Name
   else:
     t.write(2, fgRed, styleBright, "Error: ", fgWhite, &"Unable to find addon with id: ", fgCyan, $id, "\n", resetStyle)
+
+proc getRecentlyUpdatedAddons*(): seq[Addon] =
+  let maxTime = configData.addons.mapIt(it.time).max()
+  for addon in configData.addons:
+    if maxTime - addon.time <= initDuration(seconds = 60):
+      addon.action = Restore
+      result.add(addon)

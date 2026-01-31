@@ -109,6 +109,7 @@ proc parseArgs(): (tuple[action: Action, args: seq[string]]) =
       of "c", "config":  action = Setup
       of "h", "help":    action = Help
       of "reinstall":    action = Reinstall
+      of "revert":       action = Revert
       of "pin":          action = Pin
       of "unpin":        action = Unpin
       of "restore":      action = Restore
@@ -145,6 +146,13 @@ proc main() {.inline.} =
       addon.line = line
       addon.setAction(action)
       addons.add(addon)
+      line += 1
+    if addons.len == 0:
+      displayHelp()
+  of Revert:
+    addons = getRecentlyUpdatedAddons()
+    for addon in addons:
+      addon.line = line
       line += 1
     if addons.len == 0:
       displayHelp()
