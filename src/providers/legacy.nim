@@ -6,9 +6,16 @@ import std/xmltree
 
 import pkg/htmlparser
 
-proc extractJsonLegacy*(response: Response): JsonNode {.gcsafe.} =
+import ../addonHelp
+import ../types
+
+proc extractJsonLegacy*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
   result = newJObject()
-  let html = parseHtml(response.body)
+  var html: XmlNode
+  try:
+    html = parseHtml(response.body)
+  except Exception as e:
+    addon.setAddonState(Failed, "Error parsing HTML", e)
   for a in html.findAll("a"):
     if a.attr("href") == "Download":
       let onclick = a.attr("onclick")
@@ -23,3 +30,6 @@ proc extractJsonLegacy*(response: Response): JsonNode {.gcsafe.} =
     if h1.attr("class") == "entry-title":
       result["name"] = %h1.innerText()
       break
+  
+  if not result.hasKey("name") or not result.hasKey("downloadUrl"):
+    addon.setAddonState(Failed, "Unable to extract information from HTML")

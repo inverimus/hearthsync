@@ -51,9 +51,15 @@ proc chooseDownloadUrlWago*(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.gameVersion = gameVersions[addon.userSelect(gameVersions.mapIt(getVersionName(it)))]
   setDownloadUrlWago(addon, json)
 
-proc extractJsonWago*(response: Response): JsonNode {.gcsafe.} =
+proc extractJsonWago*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
   let pattern = re("""data-page="({.+?})"""")
   var matches: array[1, string]
   if find(cstring(response.body), pattern, matches, 0, len(response.body)) != -1:
     let clean = matches[0].replace("&quot;", "\"").replace("\\/", "/").replace("&amp;", "&")
-    result = parseJson(clean)
+    try:
+      result = parseJson(clean)
+    except:
+      setAddonState(addon, Failed, "Error parsing JSON.")
+  else:
+    setAddonState(addon, Failed, "Embedded JSON not found.")
+    return

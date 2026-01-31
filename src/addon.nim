@@ -169,9 +169,9 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   let response = addon.getLatest()
   if addon.state == Failed: return
   case addon.kind
-  of Legacy: json = extractJsonLegacy(response)
-  of Zremax: json = extractJsonZremax(response)
-  of Wago:   json = extractJsonWago(response)
+  of Legacy: json = addon.extractJsonLegacy(response)
+  of Zremax: json = addon.extractJsonZremax(response)
+  of Wago:   json = addon.extractJsonWago(response)
   else:
     try:
       json = parseJson(response.body)

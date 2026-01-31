@@ -9,14 +9,19 @@ import pkg/htmlparser
 
 import ../types
 import ../select
+import ../addonHelp
 
 when not defined(release):
   import ../logger
   debugLog("zremax.nim")
 
-proc extractJsonZremax*(response: Response): JsonNode {.gcsafe.} =
+proc extractJsonZremax*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
   var json = newJObject()
-  let xml = parseHtml(response.body)
+  var xml: XmlNode
+  try:
+    xml = parseHtml(response.body)
+  except Exception as e:
+    addon.setAddonState(Failed, "Error parsing HTML", e)
   let divs = xml.findAll("div")
   for node in divs:
     let class = node.attr("class")
@@ -41,7 +46,13 @@ proc extractJsonZremax*(response: Response): JsonNode {.gcsafe.} =
     if class == "view-addon_info_header_title_expansions_expansion":
       expansions.add(node.innerText())
   json["expansions"] = %expansions
+
+  if not json.hasKey("name") or not json.hasKey("version") or expansions.len == 0:
+    addon.setAddonState(Failed, "Unable to extract information from HTML")
+  
   return json
+
+
 
 proc chooseDownloadUrlZremax*(addon: Addon, json: JsonNode) {.gcsafe.} =
   var expansions: seq[string]
