@@ -206,12 +206,12 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   return json
 
 proc update(addon: Addon) {.gcsafe.} =
-  let json = addon.extractJson()
-  addon.setAddonState(Parsing)
-  addon.setVersion(json)
   if addon.pinned:
     addon.setAddonState(FinishedPinned)
     return
+  let json = addon.extractJson()
+  addon.setAddonState(Parsing)
+  addon.setVersion(json)
   if addon.action == Reinstall or addon.version != addon.startVersion:
     addon.time = now()
     addon.setDownloadUrl(json)
