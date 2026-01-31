@@ -1,4 +1,6 @@
+import std/httpclient
 import std/json
+import std/re
 import std/sequtils
 import std/strutils
 import std/strformat
@@ -48,3 +50,10 @@ proc chooseDownloadUrlWago*(addon: Addon, json: JsonNode) {.gcsafe.} =
   else:
     addon.gameVersion = gameVersions[addon.userSelect(gameVersions.mapIt(getVersionName(it)))]
   setDownloadUrlWago(addon, json)
+
+proc extractJsonWago*(response: Response): JsonNode {.gcsafe.} =
+  let pattern = re("""data-page="({.+?})"""")
+  var matches: array[1, string]
+  if find(cstring(response.body), pattern, matches, 0, len(response.body)) != -1:
+    let clean = matches[0].replace("&quot;", "\"").replace("\\/", "/").replace("&amp;", "&")
+    result = parseJson(clean)

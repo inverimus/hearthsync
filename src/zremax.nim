@@ -14,7 +14,7 @@ when not defined(release):
   import logger
   debugLog("zremax.nim")
 
-proc extractJsonZremax*(addon: Addon, response: Response): JsonNode {.gcsafe.} =
+proc extractJsonZremax*(response: Response): JsonNode {.gcsafe.} =
   var json = newJObject()
   let xml = parseHtml(response.body)
   let divs = xml.findAll("div")

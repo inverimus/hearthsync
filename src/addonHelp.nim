@@ -83,6 +83,8 @@ proc getLatestUrl*(addon: Addon): string {.gcsafe.} =
     return &"https://addons.wago.io/addons/{addon.project}/versions?stability=stable"
   of Zremax:
     return &"https://zremax.com/wow/addons/{addon.project}"
+  of Legacy: 
+    return &"https://legacy-wow.com/{addon.project}"
 
 proc findCommonPrefix(strings: seq[string]): string =
   var shortest = strings[0]

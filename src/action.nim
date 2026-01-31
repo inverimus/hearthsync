@@ -17,12 +17,12 @@ when not defined(release):
 
 proc validProject(project: string, kind: AddonKind): bool =
   case kind
-  of Curse, Wowint: return project.all(isDigit)
-  of Tukui:         return project == "tukui" or project == "elvui"
-  of Github:        return project.split("/").len == 2
-  of Wago, Zremax:  return not project.contains("/")
-  of Gitlab:        return project.split("/").len in [2, 3]
-  of GithubRepo:    return false # unused
+  of Curse, Wowint:  return project.all(isDigit)
+  of Tukui:          return project == "tukui" or project == "elvui"
+  of Github, Legacy: return project.split("/").len == 2
+  of Wago, Zremax:   return not project.contains("/")
+  of Gitlab:         return project.split("/").len in [2, 3]
+  of GithubRepo:     return false # unused
 
 proc addonFromUrl(url: string): Option[Addon] =
   let t = configData.term
@@ -75,6 +75,9 @@ proc addonFromUrl(url: string): Option[Addon] =
       discard find(cstring(urlmatch[1]), p, m, 0, len(urlmatch[1]))
       if validProject(m[0], Zremax):
         return some(newAddon(m[0], Zremax))
+    of "legacy-wow":
+      if validProject(urlmatch[1], Legacy):
+        return some(newAddon(urlmatch[1], Legacy))
     else:
       discard
   return none(Addon)
@@ -99,8 +102,10 @@ proc addonFromProject(s: string): Option[Addon] =
     if validProject(id, Gitlab): return some(newAddon(id, Gitlab))
   of "wago":
     if validProject(id, Wago):   return some(newAddon(id, Wago))
-  of "zremax:": 
+  of "zremax":
     if validProject(id, Zremax): return some(newAddon(id, Zremax))
+  of "legacy":
+    if validProject(id, Legacy): return some(newAddon(id, Legacy))
   of "github":
     if validProject(id, Github):
       var match: array[2, string]

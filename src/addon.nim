@@ -23,6 +23,7 @@ import gitlab
 import curse
 import wago
 import zremax
+import legacy
 
 when not defined(release):
   import logger
@@ -66,12 +67,12 @@ proc setName(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
   case addon.kind
   of Curse:  addon.name = addon.nameCurse(json)
-  of Github, GithubRepo, Gitlab: 
-             addon.name = addon.project.split('/')[^1]
   of Tukui:  addon.name = json["name"].getStr()
   of Wowint: addon.name = json["UIName"].getStr()
   of Wago:   addon.name = json["props"]["addon"]["display_name"].getStr()
   of Zremax: addon.name = json["name"].getStr()
+  of Github, GithubRepo, Gitlab, Legacy: 
+    addon.name = addon.project.split('/')[^1]
 
 proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
@@ -95,6 +96,8 @@ proc setVersion(addon: Addon, json: JsonNode) {.gcsafe.} =
     addon.version = addon.versionWago(json)
   of Zremax:
     addon.version = json["version"].getStr()
+  of Legacy:
+    addon.version = "N/A"
 
 proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
   if addon.state == Failed: return
@@ -127,6 +130,8 @@ proc setDownloadUrl(addon: Addon, json: JsonNode) {.gcsafe.} =
     if addon.action == Install:
       addon.chooseDownloadUrlZremax(json)
     addon.downloadUrl = &"https://zremaxcom.s3.eu-north-1.amazonaws.com/addons/addons/{addon.project}-{addon.gameVersion}.zip"
+  of Legacy:
+    addon.downloadUrl = json["downloadUrl"].getStr()
 
 proc getLatest(addon: Addon): Response {.gcsafe.} =
   if addon.state == Failed: return
@@ -169,14 +174,12 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   let response = addon.getLatest()
   if addon.state == Failed: return
   case addon.kind
+  of Legacy:
+    json = extractJsonLegacy(response)
   of Zremax:
-    json = addon.extractJsonZremax(response)
+    json = extractJsonZremax(response)
   of Wago:
-    let pattern = re("""data-page="({.+?})"""")
-    var matches: array[1, string]
-    if find(cstring(response.body), pattern, matches, 0, len(response.body)) != -1:
-      let clean = matches[0].replace("&quot;", "\"").replace("\\/", "/").replace("&amp;", "&")
-      json = parseJson(clean)
+    json = extractJsonWago(response)
   else:
     try:
       json = parseJson(response.body)
