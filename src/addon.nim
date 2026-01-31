@@ -173,12 +173,9 @@ proc extractJson(addon: Addon): JsonNode {.gcsafe.} =
   let response = addon.getLatest()
   if addon.state == Failed: return
   case addon.kind
-  of Legacy:
-    json = extractJsonLegacy(response)
-  of Zremax:
-    json = extractJsonZremax(response)
-  of Wago:
-    json = extractJsonWago(response)
+  of Legacy: json = extractJsonLegacy(response)
+  of Zremax: json = extractJsonZremax(response)
+  of Wago:   json = extractJsonWago(response)
   else:
     try:
       json = parseJson(response.body)
@@ -274,7 +271,7 @@ proc list*(addons: seq[Addon], args: seq[string] = @[]) =
     versionSpace = addons[addons.mapIt(it.getVersion().len).maxIndex()].getVersion().len + 2
   var full: bool = false
   if args.len > 0:
-    full = args[0] == "all"
+    full = args[0] == "all" or args[0] == "a"
   for addon in addons:
     addon.stateMessage(nameSpace, versionSpace, full)
   t.addLine()
