@@ -28,6 +28,13 @@ proc getName*(addon: Addon): string =
     return $addon.kind & ':' & addon.project
   return addon.name
 
+proc getKind*(addon: Addon): string =
+  case addon.kind
+  of GithubRepo:
+    return "Github@" & addon.branch.get
+  else:
+    return $addon.kind
+
 proc setAddonState*(addon: Addon, state: AddonState) {.gcsafe.} =
   if addon.state != Failed:
     addon.state = state

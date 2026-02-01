@@ -56,6 +56,7 @@ type
     githubToken*: string
     logLevel*: LogLevel
     time*: DateTime
+    width*: int
 
   Addon* = ref object
     action*: Action

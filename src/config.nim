@@ -77,6 +77,7 @@ proc writeConfig*(config: Config) =
 
 proc loadConfig*(): Config =
   result = Config()
+  result.width = terminalWidth()
   result.tempDir = getTempDir() / "hearthsync"
   createDir(result.tempDir)
   result.term = termInit()

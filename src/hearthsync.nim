@@ -58,9 +58,12 @@ proc changeConfig(args: seq[string]) =
   quit()
 
 proc processMessages(): seq[Addon] =
-  var maxName {.global.} = 0
-  var maxVersion {.global.} = 0
-  var addons {.global.}: seq[Addon]
+  var 
+    maxName {.global.} = 0
+    maxVersion {.global.} = 0
+    maxKind {.global.} = 0
+    maxProject {.global.} = 0
+    addons {.global.}: seq[Addon]
   while true:
     let (ok, addon) = addonChannel.tryRecv()
     if ok:
@@ -72,8 +75,10 @@ proc processMessages(): seq[Addon] =
         addons.add(addon)
         maxName = addons[addons.mapIt(it.getName().len).maxIndex()].getName().len + 2
         maxVersion = addons[addons.mapIt(it.getVersion().len).maxIndex()].getVersion().len + 2
+        maxKind = addons[addons.mapIt(it.getKind().len).maxIndex()].getKind().len + 2
+        maxProject = addons[addons.mapIt(it.project.len).maxIndex()].project.len + 2
         for addon in addons:
-          addon.stateMessage(maxName, maxVersion)
+          addon.stateMessage(maxName, maxVersion, maxKind, maxProject)
     else:
       break
 

@@ -16,7 +16,7 @@ when not defined(release):
 
 const LIGHT_GREY: Color = Color(0x34_34_34)
 
-proc stateMessage*(addon: Addon, nameSpace, versionSpace: int) = 
+proc stateMessage*(addon: Addon, nameSpace, versionSpace, kindSpace, projectSpace: int) = 
   case addon.state
   of Failed, DoneFailed: return
   else: discard
@@ -40,6 +40,10 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int) =
     of Checking, Parsing, Downloading, Installing, Restoring, FinishedUpToDate, Pinned, FinishedPinned, Unpinned, Renamed, Failed, NoBackup: fgYellow
     of FinishedUpdated, FinishedInstalled, Removed, Restored, Listed: fgGreen
     else: fgWhite
+
+    kindLength = case addon.kind
+    of GithubRepo: 6
+    else: ($addon.kind).len
     
   t.write(1, addon.line, true)
   if even:
@@ -56,21 +60,22 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace: int) =
       fgWhite, &"{addon.getName().alignLeft(nameSpace)}",
       fgRed, pin,
       versionColor, &"{addon.getVersion().alignLeft(versionSpace)}",
-      fgCyan, &"{kind:<6}",
-      fgWhite, if addon.branch.isSome: "@" else: "",
-      fgBlue, if addon.branch.isSome: &"{branch:<11}" else: &"{branch:<12}",
-      fgWhite, &"{time:<20}"
+      fgCyan, &"{kind.alignLeft(kindSpace)}"
     )
+    if addon.branch.isSome:
+      let x = 5 + nameSpace + versionSpace + kindLength
+      t.write(x, addon.line, false, fgWhite, "@", fgBlue, &"{branch}")
     if addon.action == ListAll:
-      t.write(fgBlue, &"{addon.project:<40}")
+      let x = 5 + nameSpace + versionSpace + kindSpace
+      t.write(x, addon.line, false, fgWhite, &"{time:<16}", fgBlue, &"{addon.project.alignLeft(projectSpace)}")
   else:
     t.write(
       stateColor, &"{$addon.state:<12}",
       fgWhite, &"{addon.getName().alignLeft(nameSpace)}", 
       versionColor, &"{addon.getVersion().alignLeft(versionSpace)}", 
-      fgCyan, &"{kind:<6}", 
-      fgWhite, if addon.branch.isSome: "@" else: "", 
-      fgBlue, if addon.branch.isSome: &"{branch:<11}" else: &"{branch:<12}"
+      fgCyan, &"{kind.alignLeft(kindSpace)}"
     )
-  
+    if addon.branch.isSome:
+      let x = 16 + nameSpace + versionSpace + kindLength
+      t.write(x, addon.line, false, fgWhite, "@", fgBlue, &"{branch}")
   t.write(resetStyle)
