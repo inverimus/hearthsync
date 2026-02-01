@@ -12,12 +12,16 @@ proc userSelect*(addon: Addon, options: seq[string]): int {.gcsafe.} =
   while true:
     for i, option in options:
       if selected == i + 1:
-        t.write(16, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
+        t.write(13, addon.line + i + 1, bgWhite, fgBlack, &"{i + 1}: {option}", resetStyle)
       else:
-        t.write(16, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
+        t.write(13, addon.line + i + 1, bgBlack, fgWhite, &"{i + 1}: {option}", resetStyle)
     let newSelected = handleSelection(options.len, selected)
     if newSelected == selected:
-      t.clear(addon.line .. addon.line + options.len)
+      for i, option in options:
+        if selected == i + 1:
+          t.write(13, addon.line + i + 1, bgBlack, fgGreen, &"{i + 1}: {option}", resetStyle)
+        else:
+          t.write(13, addon.line + i + 1, bgBlack, styleDim, fgWhite, &"{i + 1}: {option}", resetStyle)
       return selected - 1
     elif newSelected != -1:
       selected = newSelected
