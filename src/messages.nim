@@ -63,6 +63,7 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace, kindSpace, projectSpac
       fgCyan, &"{kind.alignLeft(kindSpace)}"
     )
     if addon.branch.isSome:
+      # 5 is the indent + id space
       let x = 5 + nameSpace + versionSpace + kindLength
       t.write(x, addon.line, false, fgWhite, "@", fgBlue, &"{branch}")
     if addon.action == ListAll:
@@ -76,6 +77,7 @@ proc stateMessage*(addon: Addon, nameSpace, versionSpace, kindSpace, projectSpac
       fgCyan, &"{kind.alignLeft(kindSpace)}"
     )
     if addon.branch.isSome:
+      # 16 is the indent + id + state space
       let x = 16 + nameSpace + versionSpace + kindLength
       t.write(x, addon.line, false, fgWhite, "@", fgBlue, &"{branch}")
   t.write(resetStyle)
