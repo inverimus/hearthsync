@@ -31,7 +31,7 @@ proc getName*(addon: Addon): string =
 proc getKind*(addon: Addon): string =
   case addon.kind
   of GithubRepo:
-    return "Github@" & addon.branch.get
+    return &"Github@{addon.branch.get}"
   else:
     return $addon.kind
 
