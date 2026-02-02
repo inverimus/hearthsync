@@ -74,10 +74,8 @@ proc processMessages(): seq[Addon] =
         maxName = addons.mapIt(it.getTruncatedName().len).max + 2
         maxVersion = addons.mapIt(it.getVersion().len).max + 2
         maxKind = addons.mapIt(it.getKind().len).max + 2
-        if addon.action == ListAll:
-          maxProject = addons.mapIt(it.project.len).max + 2
         for addon in addons:
-          addon.stateMessage(maxName, maxVersion, maxKind, maxProject)
+          addon.stateMessage(maxName, maxVersion, maxKind)
     else:
       break
 

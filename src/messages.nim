@@ -18,7 +18,7 @@ when not defined(release):
 
 const LIGHT_GREY: Color = Color(0x34_34_34)
 
-proc stateMessage*(addon: Addon, nameSpace, versionSpace, kindSpace, projectSpace: int) = 
+proc stateMessage*(addon: Addon, nameSpace, versionSpace, kindSpace: int) = 
   case addon.state
   of Failed, DoneFailed: return
   else: discard
