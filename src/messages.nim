@@ -157,7 +157,7 @@ proc listAddons*(addons: var seq[Addon], args: seq[string]) =
     addons.sort((a, z) => int(a.time < z.time))
 
   var 
-    multiLine = nameSpace + versionSpace + kindSpace + projectSpace + 5 > t.width
+    multiLine = detailed and (nameSpace + versionSpace + kindSpace + projectSpace + 5 > t.width)
     line = 0
     defaultBackground = true
   for addon in addons:
