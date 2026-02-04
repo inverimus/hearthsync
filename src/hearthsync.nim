@@ -62,8 +62,8 @@ proc processMessages(): seq[Addon] =
     maxKind {.global.} = 0
     addons {.global.}: seq[Addon]
   while true:
-    let (ok, addon) = addonChannel.tryRecv()
-    if ok:
+    let (msgReceived, addon) = addonChannel.tryRecv()
+    if msgReceived:
       case addon.state
       of Done, DoneFailed:
         result.add(addon)
@@ -80,8 +80,8 @@ proc processMessages(): seq[Addon] =
 
 proc processLog() =
   while true:
-    let (ok, logMessage) = logChannel.tryRecv()
-    if ok:
+    let (msgReceived, logMessage) = logChannel.tryRecv()
+    if msgReceived:
       if logMessage.level <= configData.logLevel:
         log(logMessage)
     else:
